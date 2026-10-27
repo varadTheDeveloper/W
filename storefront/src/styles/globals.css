@@ -132,6 +132,15 @@
     letter-spacing: normal;
   }
 
+  /* Marathi and Hindi headings in Mukta bold: next/font lists Poppins' Devanagari files too,
+     and using them would add ~76 KB per page (e2e/speed.spec.ts budget). The English logo (lang="en") keeps Poppins. */
+  .font-heading:lang(mr),
+  .font-heading:lang(hi),
+  :lang(mr) :is(.heading-xl, .heading-lg, .heading-md),
+  :lang(hi) :is(.heading-xl, .heading-lg, .heading-md) {
+    font-family: var(--font-latin), var(--font-sans), system-ui, sans-serif;
+  }
+
   :lang(mr) :is(.heading-xl, .heading-lg, .heading-md),
   :lang(hi) :is(.heading-xl, .heading-lg, .heading-md) {
     letter-spacing: normal;

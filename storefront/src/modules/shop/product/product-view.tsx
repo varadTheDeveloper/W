@@ -137,7 +137,7 @@ export default function ProductView({ product }: { product: HttpTypes.StoreProdu
                 {brand}
               </LocalizedClientLink>
             )}
-            <span className={`rounded-md px-2 py-0.5 text-[12px] font-semibold ${condition === "new" ? "bg-saving/10 text-saving" : "bg-accent-100 text-accent-700"}`} title={t.conditionNotes[condition]}>
+            <span className={`rounded-md px-2 py-0.5 text-[12px] font-semibold ${condition === "new" ? "bg-saving/10 text-[#075c31]" : "bg-accent-100 text-accent-700"}`} title={t.conditionNotes[condition]}>
               {t.conditions[condition]}
             </span>
           </div>
