@@ -1253,7 +1253,7 @@ export const PRODUCTS: ProductDef[] = [
     },
     highlights: ["Wireless", "Full size", "USB receiver", "Silent keys"],
     specs: { connectivity: "2.4 GHz wireless, USB nano receiver", inBox: "Keyboard, mouse, receiver" },
-    variants: [{ name: "Standard", mrp: 1999, price: 1099, stock: 25 }],
+    variants: [{ name: "Standard", mrp: 1999, price: 1099, stock: 120 }],
     weight: 800,
     hsn: HSN.part,
     priceSource: "demo",

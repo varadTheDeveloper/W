@@ -21,6 +21,7 @@ import {
 } from "@lib/util/catalog"
 import { formatINR } from "@lib/util/money"
 import { warrantyText } from "@lib/util/warranty"
+import { optionTitle } from "@lib/util/option-title"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import {
@@ -35,25 +36,21 @@ import {
   TruckIcon,
   WhatsAppIcon,
 } from "@modules/common/icons/ui"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { getBaseURL } from "@lib/util/env"
+import { usePathname, useRouter } from "next/navigation"
+import { useRef, useState, useTransition } from "react"
 import Price from "../price"
 import WishlistButton from "../wishlist-button"
+import ProductDetails from "./details"
 import Gallery from "./gallery"
 import PincodeCheck from "./pincode"
 
 const LOW_STOCK = 3
 
-export default function ProductView({
-  product,
-  details,
-}: {
-  product: HttpTypes.StoreProduct
-  /** Server-rendered details block (key features, specifications…), shown under the buttons */
-  details: React.ReactNode
-}) {
+export default function ProductView({ product }: { product: HttpTypes.StoreProduct }) {
   const { locale, t } = useI18n()
   const router = useRouter()
+  const url = `${getBaseURL()}${usePathname()}`
   const option = variantChoice(product)
   const variants = product.variants ?? []
 
@@ -66,10 +63,7 @@ export default function ProductView({
   const [error, setError] = useState<string | null>(null)
   const [adding, startAdding] = useTransition()
   const [buying, startBuying] = useTransition()
-  const [url, setUrl] = useState("")
   const optionsRef = useRef<HTMLFieldSetElement>(null)
-
-  useEffect(() => setUrl(window.location.href), [])
 
   const variant = variants.find((v) => v.id === variantId)
   const price = (variant && variantPrice(variant)) || productPrice(product)
@@ -190,7 +184,7 @@ export default function ProductView({
 
         {option && (
           <fieldset ref={optionsRef}>
-            <legend className="mb-2.5 text-sm font-semibold">{format(t.product.choose, { option: option.title })}</legend>
+            <legend className="mb-2.5 text-sm font-semibold">{format(t.product.choose, { option: optionTitle(option.title, t) })}</legend>
             <div className="grid gap-2 xsmall:grid-cols-2" role="radiogroup" aria-label={option.title}>
               {variants.map((v) => {
                 const on = v.id === variantId
@@ -289,7 +283,7 @@ export default function ProductView({
           <span className="text-sm font-semibold text-[#128c4a] group-hover:underline">{t.common.chatOnWhatsApp}</span>
         </a>
 
-        {details}
+        <ProductDetails product={product} variant={variant} />
       </div>
     </div>
   )

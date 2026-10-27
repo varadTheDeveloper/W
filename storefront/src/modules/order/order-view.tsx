@@ -82,7 +82,7 @@ export default function OrderView({
   return (
     <div className="content-container max-w-3xl py-8 small:py-12" data-testid="order-view">
       {placed ? (
-        <div className="mb-8 border border-line bg-white p-6 text-center" data-testid="order-placed">
+        <div className="mb-8 rounded-2xl border border-line bg-white p-6 text-center" data-testid="order-placed">
           <p className="mx-auto mb-3 flex h-12 w-12 items-center justify-center bg-ink text-xl text-white" aria-hidden>
             ✓
           </p>
@@ -109,14 +109,14 @@ export default function OrderView({
       </div>
 
       {canceled ? (
-        <section className="mt-6 border border-line bg-white p-5 text-sm" data-testid="order-canceled">
+        <section className="mt-6 rounded-2xl border border-line bg-white p-5 text-sm" data-testid="order-canceled">
           <p className="font-medium">
             {format(o.canceledOn, { date: shortDay(String(tracking.canceled_at ?? order.updated_at)) })}
           </p>
           {!isCod && <p className="mt-1 text-muted">{o.refundNote}</p>}
         </section>
       ) : (
-        <section className="mt-6 border border-line bg-white p-5" data-testid="order-tracking">
+        <section className="mt-6 rounded-2xl border border-line bg-white p-5" data-testid="order-tracking">
           <h2 className="eyebrow mb-4">{o.tracking}</h2>
           <ol className="grid grid-cols-5 gap-1 text-center text-[12px] small:text-[13px]">
             {delivery.steps.map(({ step, done, at }) => (
@@ -147,7 +147,7 @@ export default function OrderView({
         </section>
       )}
 
-      <section className="mt-4 border border-line bg-white p-5">
+      <section className="mt-4 rounded-2xl border border-line bg-white p-5">
         <h2 className="eyebrow mb-4">{o.items}</h2>
         <ul className="divide-y divide-line">
           {items.map((item) => {
@@ -186,7 +186,7 @@ export default function OrderView({
       {returns !== undefined && <ReturnsSection orderId={order.id} info={returns} sent={returnSent} locale={locale} t={t} />}
 
       <div className="mt-4 grid gap-4 small:grid-cols-2">
-        <section className="border border-line bg-white p-5 text-sm">
+        <section className="rounded-2xl border border-line bg-white p-5 text-sm">
           <h2 className="eyebrow mb-3">{o.deliveryAddress}</h2>
           {a && (
             <p className="leading-relaxed text-muted">
@@ -200,7 +200,7 @@ export default function OrderView({
             </p>
           )}
         </section>
-        <section className="border border-line bg-white p-5 text-sm" data-testid="order-payment">
+        <section className="rounded-2xl border border-line bg-white p-5 text-sm" data-testid="order-payment">
           <h2 className="eyebrow mb-3">{o.payment}</h2>
           <p>{isCod ? o.cod : o.paidOnline}</p>
           {isCod && !canceled && !delivery.steps[4].done && (

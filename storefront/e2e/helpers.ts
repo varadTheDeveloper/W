@@ -8,10 +8,11 @@ export function newPhone() {
   return `8${String(Date.now() + counter * 7919).slice(-9)}`
 }
 
-export async function addKurta(page: Page, quantity = 1) {
-  await page.goto("/en/products/cotton-straight-kurta")
-  await page.getByTestId("colour-maroon").click()
-  await page.getByTestId("size-L").click()
+/** The test product: ₹1,099 (MRP ₹1,999), one option, plenty of stock, cash on delivery allowed. */
+export const COMBO = { handle: "zebronics-wireless-keyboard-mouse-combo", title: "Zebronics Wireless Keyboard & Mouse Combo", price: 1099, mrp: 1999 }
+
+export async function addCombo(page: Page, quantity = 1) {
+  await page.goto(`/en/products/${COMBO.handle}`)
   await page.getByTestId("add-product-button").click()
   await expect(page.getByTestId("go-to-bag")).toBeVisible()
   if (quantity > 1) {

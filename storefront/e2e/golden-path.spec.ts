@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { addAddress, adminHeaders, BACKEND, canShip, courierUpdate, logIn, shipOrder } from "./helpers"
 
-// The whole journey once, as a shopper and staff would do it: search, product, bag,
+// The whole journey once, as a shopper and staff would do it: search, product, cart,
 // log in at checkout, pay online, staff ship it, delivered, return, refunded.
 // Needs the fake Razorpay and Shiprocket, an admin user and the webhook token (see helpers.ts).
 
@@ -29,14 +29,12 @@ test("golden path: search → buy online → delivered → return → refunded",
 
   // Search and pick a product
   await page.goto("/en")
-  await page.getByTestId("nav-search-link").click()
-  await page.getByTestId("search-input").fill("kurta")
-  await page.getByTestId("search-input").press("Enter")
-  await expect(page).toHaveURL(/\/en\/search\?q=kurta/)
-  await page.getByTestId("product-card").filter({ hasText: "Cotton Straight Kurta" }).first().click()
-  await expect(page.getByTestId("pdp-title")).toHaveText("Cotton Straight Kurta")
-  await page.getByTestId("colour-maroon").click()
-  await page.getByTestId("size-L").click()
+  const search = page.getByTestId("search-input").filter({ visible: true })
+  await search.fill("keyboard")
+  await search.press("Enter")
+  await expect(page).toHaveURL(/\/en\/search\?q=keyboard/)
+  await page.getByTestId("product-card").filter({ hasText: "Zebronics Wireless Keyboard" }).first().getByTestId("product-title").click()
+  await expect(page.getByTestId("pdp-title")).toHaveText("Zebronics Wireless Keyboard & Mouse Combo")
   await page.getByTestId("add-product-button").click()
   await page.getByTestId("go-to-bag").click()
   await expect(page.getByTestId("bag-item")).toHaveCount(1)
@@ -45,7 +43,7 @@ test("golden path: search → buy online → delivered → return → refunded",
   await page.getByTestId("checkout-button").click()
   await logIn(page, "Sneha")
   await addAddress(page)
-  await expect(page.getByTestId("checkout-total")).toHaveText("₹978")
+  await expect(page.getByTestId("checkout-total")).toHaveText("₹1,198")
   await page.getByTestId("submit-order-button").click()
   await expect(page.getByTestId("order-placed")).toContainText("Thank you")
   await expect(page.getByTestId("order-payment")).toContainText("Paid online")
@@ -62,7 +60,7 @@ test("golden path: search → buy online → delivered → return → refunded",
   // Return it: paid online, so no bank details are asked
   await page.getByTestId("start-return").click()
   await page.getByTestId("return-item-check").check()
-  await page.getByTestId("return-reason").selectOption("too_large")
+  await page.getByTestId("return-reason").selectOption("not_as_shown")
   await expect(page.getByTestId("refund-upi")).toHaveCount(0)
   await page.getByTestId("submit-return").click()
   await expect(page.getByTestId("return-sent")).toBeVisible()
@@ -74,5 +72,5 @@ test("golden path: search → buy online → delivered → return → refunded",
   expect((await page.request.post(`${BACKEND}/admin/return-requests/${request.id}/receive`, { headers: admin })).status()).toBe(200)
   await page.goto(`/en/account/orders/details/${orderId}`)
   await expect(page.getByTestId("return-request")).toHaveAttribute("data-status", "refunded")
-  await expect(page.getByTestId("return-request")).toContainText("Refund: ₹899")
+  await expect(page.getByTestId("return-request")).toContainText("Refund: ₹1,099")
 })

@@ -1,36 +1,38 @@
 import { describe, expect, it } from "vitest"
-import { JEANS, KURTA, makeProduct, TEE } from "./__fixtures__/products"
+import { GPU, LAPTOP, MAC_MINI, makeProduct } from "./__fixtures__/products"
 import { normalize, searchProducts } from "./search"
 
 const ids = (list: { id: string }[]) => list.map((p) => p.id)
 
 describe("search", () => {
-  const all = [TEE, JEANS, KURTA]
+  const all = [LAPTOP, GPU, MAC_MINI]
 
   it("normalises case and punctuation but keeps Devanagari", () => {
-    expect(normalize("  T-Shirt, Black! ")).toBe("t shirt black")
-    expect(normalize("कुर्ता")).toBe("कुर्ता")
+    expect(normalize("  RTX-3050, 6GB! ")).toBe("rtx 3050 6gb")
+    expect(normalize("लॅपटॉप")).toBe("लॅपटॉप")
   })
 
-  it("finds by title words, plurals and colour names in any language", () => {
-    expect(ids(searchProducts(all, "jeans"))).toEqual(["jeans"])
-    expect(ids(searchProducts(all, "t-shirts"))).toEqual(["tee"])
-    expect(ids(searchProducts(all, "काला"))).toEqual(["tee"]) // Hindi for black
-    expect(ids(searchProducts(all, "कुर्ता"))).toEqual(["kurta"])
+  it("finds by title, brand, category, specs and configuration", () => {
+    expect(ids(searchProducts(all, "laptop"))).toEqual(["hp-15s"])
+    expect(ids(searchProducts(all, "gigabyte"))).toEqual(["rtx-3050"])
+    expect(ids(searchProducts(all, "graphics cards"))).toEqual(["rtx-3050"])
+    expect(ids(searchProducts(all, "i5"))).toEqual(["hp-15s"]) // from a configuration's specs
+    expect(ids(searchProducts(all, "6gb"))).toEqual(["rtx-3050"])
   })
 
   it("forgives one typo in longer words", () => {
-    expect(ids(searchProducts(all, "jeens"))).toEqual(["jeans"])
-    expect(ids(searchProducts(all, "slimm"))).toEqual(["jeans"])
+    expect(ids(searchProducts(all, "lapptop"))).toEqual(["hp-15s"])
   })
 
   it("needs every word to match", () => {
-    expect(ids(searchProducts(all, "black jeans"))).toEqual([])
+    expect(ids(searchProducts(all, "apple laptop"))).toEqual([])
     expect(searchProducts(all, "   ")).toEqual([])
   })
 
   it("matches the English version of a translated catalogue", () => {
-    const englishKurta = makeProduct({ id: "kurta", title: "Cotton Straight Kurta", colours: ["maroon"], sizes: ["M"], variants: [] })
-    expect(ids(searchProducts([KURTA], "kurta", [englishKurta]))).toEqual(["kurta"])
+    const marathi = makeProduct({ id: "hp-15s", title: "HP 15s लॅपटॉप", variants: [] })
+    const english = makeProduct({ id: "hp-15s", title: "HP 15s Laptop", variants: [] })
+    expect(ids(searchProducts([marathi], "laptop", [english]))).toEqual(["hp-15s"])
+    expect(ids(searchProducts([marathi], "लॅपटॉप"))).toEqual(["hp-15s"])
   })
 })

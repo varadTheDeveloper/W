@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { addAddress, addKurta, adminHeaders, canShip, courierUpdate, logIn, shipOrder, submit } from "./helpers"
+import { addAddress, addCombo, adminHeaders, canShip, courierUpdate, logIn, shipOrder, submit } from "./helpers"
 
 // Needs the backend in test mode (SMS_PROVIDER=console, OTP_TEST_CODE=123456) and,
 // for the online payment test, the fake Razorpay API:
@@ -12,16 +12,16 @@ const FAKE_RAZORPAY = process.env.FAKE_RAZORPAY_URL || "http://127.0.0.1:9911"
 const SHOTS = process.env.E2E_SCREENSHOTS
 
 test("checkout: log in at checkout, add an address, pay cash on delivery", async ({ page }, info) => {
-  await addKurta(page)
+  await addCombo(page)
   await page.goto("/en/checkout")
   await expect(page.getByTestId("checkout-login")).toBeVisible()
   await logIn(page)
   await addAddress(page)
 
   await expect(page.getByTestId("checkout-delivery-date")).toContainText("Delivery by")
-  // Below ₹999: delivery is charged
-  await expect(page.getByTestId("checkout-delivery")).toHaveText("₹79")
-  await expect(page.getByTestId("checkout-total")).toHaveText("₹978")
+  // Below ₹4,999: delivery is charged
+  await expect(page.getByTestId("checkout-delivery")).toHaveText("₹99")
+  await expect(page.getByTestId("checkout-total")).toHaveText("₹1,198")
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/checkout-${info.project.name}.png`, fullPage: true })
 
   await page.getByTestId("cod-option").check()
@@ -29,7 +29,7 @@ test("checkout: log in at checkout, add an address, pay cash on delivery", async
   await submit(page, info.project.name === "phone").click()
 
   await expect(page.getByTestId("order-placed")).toContainText("Thank you")
-  await expect(page.getByTestId("order-total")).toHaveText("₹978")
+  await expect(page.getByTestId("order-total")).toHaveText("₹1,198")
   await expect(page.getByTestId("order-payment")).toContainText("Cash on delivery")
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/order-placed-${info.project.name}.png`, fullPage: true })
 
@@ -43,13 +43,13 @@ test("checkout: log in at checkout, add an address, pay cash on delivery", async
   await expect(page.getByTestId("track-placed")).toHaveAttribute("data-done", "true")
   await expect(page.getByTestId("track-packed")).toHaveAttribute("data-done", "false")
 
-  // The bag is empty after the order
+  // The cart is empty after the order
   await page.goto("/en/cart")
   await expect(page.getByTestId("empty-cart-message")).toBeVisible()
 })
 
 test("orders: cancel before it is shipped", async ({ page }, info) => {
-  await addKurta(page)
+  await addCombo(page)
   await page.goto("/en/checkout")
   await logIn(page)
   await addAddress(page)
@@ -66,7 +66,7 @@ test("orders: cancel before it is shipped", async ({ page }, info) => {
 })
 
 test("checkout: no cash on delivery where couriers cannot collect it", async ({ page }) => {
-  await addKurta(page)
+  await addCombo(page)
   await page.goto("/en/checkout")
   await logIn(page)
   await addAddress(page, "800001")
@@ -74,7 +74,7 @@ test("checkout: no cash on delivery where couriers cannot collect it", async ({ 
   await expect(page.getByTestId("checkout-payment")).toContainText("not available here")
 })
 
-test("checkout: pay online (Razorpay), free delivery from ₹999", async ({ page }, info) => {
+test("checkout: pay online (Razorpay), free delivery from ₹4,999", async ({ page }, info) => {
   await page.route("https://checkout.razorpay.com/v1/checkout.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
@@ -93,28 +93,28 @@ test("checkout: pay online (Razorpay), free delivery from ₹999", async ({ page
   await page.goto("/en/account")
   await logIn(page, "Ravi")
   await expect(page.getByTestId("account-hello")).toBeVisible()
-  await addKurta(page, 2)
+  await addCombo(page, 5)
   await page.goto("/en/checkout")
   await addAddress(page)
 
   await expect(page.getByTestId("checkout-delivery")).toHaveText("Free")
-  await expect(page.getByTestId("checkout-total")).toHaveText("₹1,798")
+  await expect(page.getByTestId("checkout-total")).toHaveText("₹5,495")
   await submit(page, info.project.name === "phone").click()
 
   await expect(page.getByTestId("order-placed")).toContainText("Thank you")
-  await expect(page.getByTestId("order-total")).toHaveText("₹1,798")
+  await expect(page.getByTestId("order-total")).toHaveText("₹5,495")
   await expect(page.getByTestId("order-payment")).toContainText("Paid online")
 
   // Listed under My orders, with the same details
   await page.goto("/en/account/orders")
   await page.getByTestId("order-row").first().getByRole("link").click()
-  await expect(page.getByTestId("order-total")).toHaveText("₹1,798")
+  await expect(page.getByTestId("order-total")).toHaveText("₹5,495")
 })
 
 test("checkout: Marathi texts", async ({ page }) => {
-  await addKurta(page)
+  await addCombo(page)
   await page.goto("/mr/checkout")
-  await expect(page.getByTestId("back-to-cart-link")).toContainText("बॅगकडे परत जा")
+  await expect(page.getByTestId("back-to-cart-link")).toContainText("कार्टकडे परत जा")
   await expect(page.getByTestId("checkout-login")).toContainText("ऑर्डर करण्यासाठी लॉग इन करा")
 })
 
@@ -122,7 +122,7 @@ test("checkout: Marathi texts", async ({ page }) => {
 // Needs an admin user and the webhook token (see helpers.ts).
 test("orders: shipped by staff, tracked by the customer", async ({ page }, info) => {
   test.skip(!canShip, "needs an admin user and the webhook token")
-  await addKurta(page)
+  await addCombo(page)
   await page.goto("/en/checkout")
   await logIn(page)
   await addAddress(page)

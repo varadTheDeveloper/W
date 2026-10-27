@@ -1,6 +1,8 @@
-# Clothing store: project brief for Claude Code
+# Computer Warehouse Jalna: project brief for Claude Code
 
-Online clothing store for an Indian brand (name not chosen yet: keep it in one config place, never hard-code it).
+Online shop for Computer Warehouse Jalna, a multi-brand computer showroom in Old Jalna (laptops, gaming PCs,
+complete setups, PC parts, monitors, printers, repairs). Built from varadTheDeveloper/e-commerce (a clothing shop,
+commit 61efde3); shop details in `storefront/src/config/brand.ts`, never hard-coded elsewhere.
 Owner/developer: Varad (Windows, PowerShell, VS Code). Repo: `varadTheDeveloper/e-commerce`, **public, GPL-3.0** (client agreed).
 
 ## Working agreement
@@ -10,7 +12,7 @@ Owner/developer: Varad (Windows, PowerShell, VS Code). Repo: `varadTheDeveloper/
 - Short answers, simple language.
 
 ## Goal
-Amazon/Flipkart-level experience for one clothing brand: fast on cheap phones and 4G, mobile first, mr / hi / en (every customer-facing string in all three), accessible (WCAG AA).
+Amazon/Flipkart/nayajaisa-level experience for one computer shop: fast on cheap phones and 4G, mobile first, mr / hi / en (every customer-facing string in all three), accessible (WCAG AA).
 Copy *ideas* from Amazon/Flipkart/Myntra, never their code, logos, names or design assets.
 Copying open-source code is fine (MIT, BSD, GPL); record every copy in `CREDITS.md` with the commit.
 
@@ -30,7 +32,7 @@ Prices are INR. Medusa v2 stores amounts in major units (999 = ₹999).
 3. (done) Account + bag: phone OTP login (custom auth provider `phone-otp`), Indian addresses, account wishlist, bag page.
 4. (done) Checkout: address, Razorpay (manual capture, checked on the server, signed webhook), COD (limit + SMS code), stock check, delivery charge, GST invoice PDF.
 5. (done) Orders + shipping: Shiprocket (pincode check, booking from the admin, tracking webhook), order timeline, email (Resend) + SMS (Message Central, DLT) updates, cancel before dispatch.
-6. (done) Returns + size exchange: 7 days after delivery, free pickup (Shiprocket), photos for damaged/wrong items, COD refunds by staff to UPI/bank, online refunds through Razorpay, staff page in the admin, staff guide `docs/STAFF-GUIDE.md`.
+6. (done) Returns + size exchange (now: replacement with the same item, for computers): 7 days after delivery, free pickup (Shiprocket), photos for damaged/wrong items, COD refunds by staff to UPI/bank, online refunds through Razorpay, staff page in the admin, staff guide `docs/STAFF-GUIDE.md`.
 7. Quality, in 3 PRs:
    7a. (done) Legal/help pages (mr/hi/en, placeholder seller details, "draft" notice), consent at sign-up, delete my account.
    7b. (done) Phone speed check, accessibility (axe + keyboard), security review, "golden path" browser test.
@@ -125,8 +127,9 @@ server would pick up the tests' delayed jobs (the Razorpay webhook test then fai
 
 ## Known limits
 - Hindi/Marathi wording (UI and demo products) is not reviewed by a native speaker yet.
-- Brand name "Vastra", colours, logo, demo photos and size charts are placeholders. Demo photos are Unsplash
-  (credited on /credits, hotlinked from images.unsplash.com); replace with the brand's photos before launch.
+- Prices are demo prices (11 from the shop's Instagram offers); the shop must confirm all prices, stock, legal
+  name and GSTIN. Product photos are official brand photos (sources: storefront/public/products/SOURCES.md);
+  the shop's own builds use representative pictures until real photos arrive. Text logo drawn in code.
 - Real SMS: the client is signing up with Message Central (docs/SETUP-SMS.md, option A); until the keys are on the
   server, login works only in test mode. Message Central is tested only against a fake of their API, not the live service.
 - Rate limits (codes, staff login, photo uploads, pincode checks) are in memory (one server); move to Redis if
@@ -153,3 +156,13 @@ server would pick up the tests' delayed jobs (the Razorpay webhook test then fai
 - Docker is not available in the cloud dev box: the server setup (`deploy/`) was checked by building and running the
   same steps without Docker, validating the compose file and Caddyfile, and running Caddy; the images themselves are
   first built by GitHub Actions and first run on the server.
+
+## Computer shop (October 2026)
+- Design: signboard yellow (`accent`) and red (`brand`) on `navy`; Poppins headings, Inter (Latin) + Mukta
+  (Devanagari) text. Any `tracking-*` class is reset in Marathi/Hindi (it splits joined letters); the logo is `lang="en"`.
+- Catalogue helpers: `storefront/src/lib/util/catalog.ts` (brand, condition, specs, configurations, filters by
+  brand/condition/price/stock). Product metadata keys are listed in README ("Where things are").
+- The store API drops `+variants.metadata`; `lib/data/catalog.ts` asks for `*variants` so variant specs arrive.
+- Shop photos are stored as `STOREFRONT_URL/products/x.jpg` and served as `/products/x.jpg` (`shopImage`).
+- Home page sections: `storefront/src/modules/home/components/`; custom PC / repair / business pages send a
+  WhatsApp message (`modules/services/whatsapp-form.tsx`).

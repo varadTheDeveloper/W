@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test"
 
 const BUDGET_KB = { script: 180, font: 300 }
 
-for (const path of ["/mr", "/mr/products/cotton-straight-kurta", "/en/store"]) {
+for (const path of ["/mr", "/mr/products/hp-15s-laptop", "/en/store"]) {
   test(`speed budget: ${path}`, async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "measured once")
     await page.goto(path, { waitUntil: "load" })

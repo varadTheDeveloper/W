@@ -12,7 +12,7 @@ type Step = "phone" | "code" | "name"
 const VALID_MOBILE = /^[6-9]\d{9}$/
 
 const input =
-  "h-12 w-full border border-line bg-white px-4 text-[16px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
+  "h-12 w-full rounded-xl border border-line bg-white px-4 text-[16px] text-ink placeholder:text-muted focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
 
 /** Mobile number → SMS code → (first time) name. */
 export default function PhoneLogin() {
@@ -117,9 +117,9 @@ export default function PhoneLogin() {
           <label className="flex flex-col gap-1.5 text-sm">
             {t.auth.phoneLabel}
             <span className="flex">
-              <span className="flex h-12 items-center border border-r-0 border-line bg-surface px-3 text-[16px] text-muted">+91</span>
+              <span className="flex h-12 items-center rounded-l-xl border border-r-0 border-line bg-surface px-3 text-[16px] text-muted">+91</span>
               <input
-                className={input}
+                className={`${input} rounded-l-none`}
                 type="tel"
                 inputMode="numeric"
                 autoComplete="tel-national"

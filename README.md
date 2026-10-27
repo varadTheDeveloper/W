@@ -1,7 +1,17 @@
-# Clothing store
+# Computer Warehouse Jalna – online shop
 
-An online clothing store for India, in Marathi, Hindi and English. Open source under the GPL-3.0 (see `LICENSE`).
-The brand name is a placeholder until the client confirms it.
+Online shop for **Computer Warehouse Jalna**, a multi-brand computer showroom in Old Jalna, Maharashtra:
+laptops, gaming PCs, complete setups, PC parts, monitors, printers, repairs and custom PC builds.
+Marathi (default), Hindi and English. Open source under the GPL-3.0 (see `LICENSE`).
+
+Started from [varadTheDeveloper/e-commerce](https://github.com/varadTheDeveloper/e-commerce) (commit `61efde3`),
+the same Medusa + Next.js shop, turned from clothing into computers. Shop research (Instagram, Google listing,
+photo sources): [varadTheDeveloper/C](https://github.com/varadTheDeveloper/C), branch `research-data`.
+
+**Before launch the shop must confirm:** every price (all prices are demo prices; 11 come from the shop's
+own Instagram offer posts), stock, the legal name, GSTIN and emails (`config/seller.ts` in both apps), and the
+condition of the HP EliteBook 840 G7 (listed as refurbished) and other demo details. Real photos of the shop's
+own PC builds should replace the representative pictures.
 
 ```
 backend/      Medusa v2 server + admin panel (TypeScript, Postgres, Redis)   http://localhost:9000  (admin: /app)
@@ -24,7 +34,7 @@ cd backend
 copy .env.template .env                     # Windows (macOS/Linux: cp)
 yarn install
 npx medusa db:migrate
-yarn seed                                   # demo catalogue: 12 clothes, India region, ₹ prices, mr/hi/en text
+yarn seed                                   # demo catalogue: 43 computer products, India region, ₹ prices, mr/hi/en text
 npx medusa user -e you@example.com -p <password>   # first admin user
 yarn dev                                    # http://localhost:9000/app
 
@@ -53,23 +63,33 @@ The backend tests create and drop their own database. They read `DB_HOST`, `DB_U
 
 | What | Where |
 |---|---|
-| Brand name, policies shown on the site | `storefront/src/config/brand.ts` |
+| Shop name, phones, WhatsApp, address, hours, Google rating, Instagram | `storefront/src/config/brand.ts` |
+| Category pictures, home page tiles, menu links, opening hours text | `storefront/src/config/categories.ts` |
 | Delivery charge, free-delivery amount, COD limit | `backend/src/config/shop.ts` |
 | Seller details on GST invoices, pickup address for couriers | `backend/src/config/seller.ts` |
 | Texts of order emails and SMS (mr/hi/en) | `backend/src/notifications/messages.ts` |
-| Brand colours | `storefront/tailwind.config.js` (`brand`, `accent`, …) |
+| Colours (signboard red `brand`, yellow `accent`, `navy`) | `storefront/tailwind.config.js` |
 | Shop texts in mr / hi / en | `storefront/src/lib/i18n/dictionaries/` |
-| Colour names and swatches | `storefront/src/lib/i18n/colours.ts` |
-| Size charts | `storefront/src/lib/size-charts.ts` |
-| Demo products (with Hindi/Marathi text) | `backend/src/scripts/data/catalogue.ts` |
-| Demo photos (Unsplash links + photographer credits) | `backend/src/scripts/data/demo-photos.json`, banners in `storefront/src/config/banners.ts` |
+| Demo products (specs, prices, Hindi/Marathi text) | `backend/src/scripts/data/catalogue.ts` |
+| Product photos and their sources | `storefront/public/products/` (`SOURCES.md`), banner cut-outs in `public/hero/` |
 
 Product, category and collection text in Hindi and Marathi is stored with Medusa's translation module
-(editable in the admin panel). Colour and size values stay in English as keys.
+(editable in the admin panel). Model names and technical specs stay in English, as on every Indian electronics shop.
 
-Demo photos are free Unsplash photos, loaded from Unsplash's servers (their rules), and credited on `/credits`.
-They are stand-ins: before launch every product must show the brand's own photos. Each picture is matched
-to a colour by its `colour` metadata, or by attaching it to that colour's variants in the admin panel.
+Product facts live in product metadata (editable in the admin): `brand`, `condition` (`new` | `open-box` |
+`refurbished`), `warranty_months`, `highlights` (list), `specs` (key → value; keys are translated on the site,
+see `specs` in the dictionaries), `badge` (`bestseller` | `new` | `hot`), `collections` (extra collection
+handles such as `deals`, `diwali`), `representative_photo`. A product with several configurations has one
+option (e.g. "Configuration") and each variant may carry its own `specs` in its metadata (processor, RAM…).
+
+Photos are official brand photos (none from Amazon or Flipkart). Pictures of the shop's own builds and setups
+(`pc-*.jpg`, `setup-*.jpg`) and the transparent banner pictures are made from them by
+`storefront/scripts/make-setup-photos.py` and are labelled as representative on the product page.
+The seed links photos as `STOREFRONT_URL/products/…`; the site serves those as local files.
+
+The home page banners and offers are in `storefront/src/app/[locale]/(main)/page.tsx` and
+`storefront/src/modules/home/`. The custom PC, repair and business pages send their forms to WhatsApp
+(nothing is stored on the server).
 
 ## Customer login (phone codes)
 
@@ -83,7 +103,8 @@ code 123456 (tests use this; it is ignored in production). Real SMS: Message Cen
 ## Checkout and payments
 
 Customers log in (phone code), choose a saved address or add one, and pay online with Razorpay
-or by cash on delivery (orders up to ₹5,000, confirmed by SMS code). Delivery is ₹79, free from ₹999.
+or by cash on delivery (orders up to ₹10,000, confirmed by SMS code). Delivery is ₹99, free from ₹4,999.
+GST is 18% on everything the shop sells today (`backend/src/lib/gst.ts`).
 After the order they can download a GST invoice (PDF). Shop rules: `backend/src/config/shop.ts`;
 seller details for invoices: `backend/src/config/seller.ts` (placeholders). Setup steps for
 Razorpay, the webhook and GST: `docs/SETUP-PAYMENTS.md`.
@@ -107,9 +128,9 @@ shipped, and get emails/SMS at each step. Setup: `docs/SETUP-SHIPPING.md`. For l
 `SHIPROCKET_EMAIL=api@example.com SHIPROCKET_PASSWORD=fake-password SHIPROCKET_API_BASE=http://127.0.0.1:9912`.
 With the fake, pincodes starting with 9 are not served and those starting with 8 have no cash on delivery.
 
-## Returns and size exchange
+## Returns and replacement
 
-Within 7 days of delivery, customers ask for a return or another size from their order page. Staff decide in the
+Within 7 days of delivery, customers ask for a refund or a replacement (the same item) from their order page. Staff decide in the
 admin panel (**Returns**); approving books a free courier pickup. Online payments are refunded through Razorpay when
 the item comes back; cash-on-delivery refunds are sent by staff to the customer's UPI ID or bank account. How staff
 handle orders, cancellations and returns: `docs/STAFF-GUIDE.md`.

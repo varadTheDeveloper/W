@@ -1,4 +1,4 @@
-import { getProduct, listProductsFor } from "@lib/data/catalog"
+import { getProduct, listCategoryTree, listProductsFor } from "@lib/data/catalog"
 import { getDictionary } from "@lib/i18n"
 import { LOCALES, toLocale } from "@lib/i18n/config"
 import { productBrand, productImages, productPrice, isProductInStock, sortProducts } from "@lib/util/catalog"
@@ -6,7 +6,6 @@ import { getBaseURL } from "@lib/util/env"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { ChevronRightIcon } from "@modules/common/icons/ui"
 import ProductRail from "@modules/shop/product-rail"
-import ProductDetails from "@modules/shop/product/details"
 import ProductView from "@modules/shop/product/product-view"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -47,9 +46,16 @@ export default async function ProductPage(props: Props) {
   if (!product) notFound()
 
   const category = product.categories?.[0]
-  const related = category
-    ? sortProducts((await listProductsFor(locale, { category_id: [category.id] })).filter((p) => p.id !== product.id), "popular")
-    : []
+  // Same category first, then the rest of its parent category (e.g. other laptops)
+  let related: Awaited<ReturnType<typeof listProductsFor>> = []
+  if (category) {
+    const tree = await listCategoryTree(locale)
+    const parentId = tree.find((c) => c.id === category.id)?.parent_category_id
+    const family = parentId ? [parentId, ...tree.filter((c) => c.parent_category_id === parentId).map((c) => c.id)] : [category.id]
+    const list = (await listProductsFor(locale, { category_id: family })).filter((p) => p.id !== product.id)
+    const same = (p: (typeof list)[number]) => (p.categories ?? []).some((c) => c.id === category.id)
+    related = [...sortProducts(list.filter(same), "popular"), ...sortProducts(list.filter((p) => !same(p)), "popular")]
+  }
 
   // Product facts for Google (price, stock, brand) as structured data
   const price = productPrice(product)
@@ -99,7 +105,7 @@ export default async function ProductPage(props: Props) {
             </li>
           </ol>
         </nav>
-        <ProductView product={product} details={<ProductDetails product={product} t={t} />} />
+        <ProductView product={product} />
       </div>
       <ProductRail title={t.product.youMayLike} href={category ? `/categories/${category.handle}` : undefined} products={related} locale={locale} t={t} />
     </div>

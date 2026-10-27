@@ -1,15 +1,15 @@
 import { expect, Page, test } from "@playwright/test"
-import { addAddress, addKurta, adminHeaders, BACKEND, canShip, courierUpdate, logIn, shipOrder, submit } from "./helpers"
+import { addAddress, addCombo, adminHeaders, BACKEND, canShip, courierUpdate, logIn, shipOrder, submit } from "./helpers"
 
-// Returns and size exchanges after delivery. Needs an admin user and the webhook token (see helpers.ts).
+// Returns and replacements after delivery. Needs an admin user and the webhook token (see helpers.ts).
 
 // A 1×1 PNG, as a phone photo stand-in
 const SHOTS = process.env.E2E_SCREENSHOTS
 const PHOTO = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64")
 
-/** A cash-on-delivery order for one kurta (maroon, L), delivered by the courier. */
+/** A cash-on-delivery order for one keyboard combo, delivered by the courier. */
 async function deliveredOrder(page: Page, phone: boolean) {
-  await addKurta(page)
+  await addCombo(page)
   await page.goto("/en/checkout")
   await logIn(page)
   await addAddress(page)
@@ -28,7 +28,7 @@ test("returns: return a cash-on-delivery order, refund to UPI", async ({ page },
   const { orderId, admin } = await deliveredOrder(page, info.project.name === "phone")
 
   await page.goto(`/en/account/orders/details/${orderId}`)
-  await expect(page.getByTestId("order-returns")).toContainText("You can return or exchange items until")
+  await expect(page.getByTestId("order-returns")).toContainText("You can return or replace items until")
   await page.getByTestId("start-return").click()
   await expect(page.getByTestId("return-form")).toBeVisible()
 
@@ -37,7 +37,7 @@ test("returns: return a cash-on-delivery order, refund to UPI", async ({ page },
   await expect(page.getByTestId("return-error")).toHaveText("Choose at least one item.")
 
   await page.getByTestId("return-item-check").check()
-  await page.getByTestId("return-reason").selectOption("changed_mind")
+  await page.getByTestId("return-reason").selectOption("not_as_shown")
   // Paid in cash: the refund needs a UPI ID or bank account
   await page.getByTestId("refund-upi").fill("asha")
   await page.getByTestId("submit-return").click()
@@ -50,7 +50,7 @@ test("returns: return a cash-on-delivery order, refund to UPI", async ({ page },
   const request = page.getByTestId("return-request")
   await expect(request).toHaveAttribute("data-status", "requested")
   await expect(request).toContainText("Return of 1 item(s)")
-  await expect(request).toContainText("Refund: ₹899")
+  await expect(request).toContainText("Refund: ₹1,099")
   // The only item is in the request now
   await expect(page.getByTestId("start-return")).toHaveCount(0)
 
@@ -66,7 +66,7 @@ test("returns: return a cash-on-delivery order, refund to UPI", async ({ page },
   if (SHOTS) await page.getByTestId("order-returns").screenshot({ path: `${SHOTS}/order-returns-${info.project.name}.png` })
 })
 
-test("returns: exchange for another size, photo for a damaged item", async ({ page }, info) => {
+test("returns: replacement with the same item, photo for a damaged item", async ({ page }, info) => {
   test.skip(!canShip, "needs an admin user and the webhook token")
   const { orderId } = await deliveredOrder(page, info.project.name === "phone")
 
@@ -74,22 +74,20 @@ test("returns: exchange for another size, photo for a damaged item", async ({ pa
   await page.getByTestId("type-exchange").check()
   await page.getByTestId("return-item-check").check()
   await page.getByTestId("return-reason").selectOption("damaged")
-  // L was ordered: the other sizes of the same colour are offered
-  const size = page.getByTestId("return-size")
-  await expect(size.locator("option")).toHaveText(["—", "S", "M", "XL", "XXL"])
-  await size.selectOption({ label: "M" })
-  // No refund account for an exchange
+  // The same item is offered as the replacement
+  await expect(page.getByTestId("return-replacement")).toBeVisible()
+  // No refund account for a replacement
   await expect(page.getByTestId("refund-upi")).toHaveCount(0)
 
   // Damaged: a photo is needed
   await page.getByTestId("submit-return").click()
   await expect(page.getByTestId("return-error")).toHaveText("Add a photo of the damaged or wrong item.")
-  await page.getByTestId("photo-input").setInputFiles({ name: "kurta.png", mimeType: "image/png", buffer: PHOTO })
+  await page.getByTestId("photo-input").setInputFiles({ name: "keyboard.png", mimeType: "image/png", buffer: PHOTO })
   await expect(page.getByTestId("return-form").locator("img[alt='']").last()).toHaveAttribute("src", /returns\//)
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/exchange-form-${info.project.name}.png`, fullPage: true })
   await page.getByTestId("submit-return").click()
 
   await expect(page.getByTestId("return-sent")).toBeVisible()
-  await expect(page.getByTestId("return-request")).toContainText("Exchange of 1 item(s)")
+  await expect(page.getByTestId("return-request")).toContainText("Replacement of 1 item(s)")
   await expect(page.getByTestId("return-request")).toContainText("Waiting for approval")
 })

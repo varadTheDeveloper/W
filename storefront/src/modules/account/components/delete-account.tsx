@@ -62,7 +62,7 @@ export default function DeleteAccount() {
           </div>
         </div>
       )}
-      <p role="alert" className={error ? "mt-4 bg-brand-50 px-4 py-3 text-sm text-danger" : "sr-only"} data-testid="delete-account-error">
+      <p role="alert" className={error ? "mt-4 rounded-lg bg-brand-50 px-4 py-3 text-sm text-danger" : "sr-only"} data-testid="delete-account-error">
         {error}
       </p>
     </section>

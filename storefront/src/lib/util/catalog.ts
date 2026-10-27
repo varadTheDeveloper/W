@@ -49,17 +49,22 @@ function specsOf(x: { metadata?: Meta | null } | undefined): Record<string, stri
   return Object.fromEntries(Object.entries(s as Meta).filter(([, v]) => typeof v === "string" && v)) as Record<string, string>
 }
 
-/**
- * Specifications of the product, with the chosen variant's own values
- * (processor, RAM, storage…) put first.
- */
+/** Order of specs in tables; others follow in the order the catalogue lists them */
+const SPEC_ORDER = [
+  "processor", "cores", "socket", "chipset", "graphics", "ram", "memory", "storage", "display", "screenSize",
+  "resolution", "refreshRate", "panel", "motherboard", "power", "wattage", "efficiency", "cooling", "cabinet",
+  "monitor", "keyboardMouse", "printType", "functions", "connectivity", "ports", "os", "formFactor", "weight", "inBox",
+]
+
+/** Specifications of the product, with the chosen variant's own values (processor, RAM, storage…). */
 export function productSpecs(
   product: HttpTypes.StoreProduct,
   variant?: HttpTypes.StoreProductVariant
 ): [string, string][] {
   const base = specsOf(product)
   const own = specsOf(variant ?? (product.variants?.length === 1 ? product.variants[0] : undefined))
-  const keys = [...new Set([...Object.keys(own), ...Object.keys(base)])]
+  const rank = (k: string) => (SPEC_ORDER.includes(k) ? SPEC_ORDER.indexOf(k) : SPEC_ORDER.length)
+  const keys = [...new Set([...Object.keys(own), ...Object.keys(base)])].sort((a, b) => rank(a) - rank(b))
   return keys.map((k) => [k, own[k] ?? base[k]])
 }
 

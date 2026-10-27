@@ -7,7 +7,7 @@ import { HttpTypes } from "@medusajs/types"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
-const field = "h-12 w-full border border-line bg-white px-4 text-[16px] text-ink focus:border-ink focus:outline-none"
+const field = "h-12 w-full rounded-xl border border-line bg-white px-4 text-[16px] text-ink focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
 
 export default function ProfileForm({ customer }: { customer: HttpTypes.StoreCustomer }) {
   const { t } = useI18n()

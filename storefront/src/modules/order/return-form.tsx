@@ -10,13 +10,14 @@ import { useRouter } from "next/navigation"
 import { useRef, useState, useTransition } from "react"
 import { shopImage } from "@lib/util/catalog"
 
-const REASONS: ReturnReason[] = ["too_small", "too_large", "damaged", "wrong_item", "not_as_shown", "changed_mind", "other"]
+// Reasons that fit computers (the backend accepts a few more, kept for old requests)
+const REASONS: ReturnReason[] = ["damaged", "wrong_item", "not_as_shown", "other"]
 const PHOTO_REASONS: ReturnReason[] = ["damaged", "wrong_item"]
-const field = "h-11 w-full border border-line bg-white px-3 text-[16px] focus:border-ink focus:outline-none"
+const field = "h-11 w-full rounded-xl border border-line bg-white px-3 text-[16px] focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
 
 type Choice = { checked: boolean; quantity: number; reason: ReturnReason | ""; note: string; size: string }
 
-/** Ask to return items for a refund, or exchange them for another size. */
+/** Ask to return items for a refund, or to have a faulty or wrong item replaced. */
 export default function ReturnForm({ orderId, info, details }: { orderId: string; info: ReturnInfo; details: Record<string, LineDetails> }) {
   const { locale, t } = useI18n()
   const r = t.returns
@@ -56,12 +57,19 @@ export default function ReturnForm({ orderId, info, details }: { orderId: string
     }
   }
 
+  // The replacement: what the customer chose, or the only one on offer (the same item) when in stock
+  const replacement = (item: (typeof chosen)[number]) => {
+    const c = choice(item.line_item_id)
+    const inStock = item.exchange_options.filter((o) => o.in_stock)
+    return c.size || (item.exchange_options.length === 1 && inStock.length === 1 ? inStock[0].variant_id : "")
+  }
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     if (!chosen.length) return setError(errorText("choose"))
     if (chosen.some((i) => !choice(i.line_item_id).reason)) return setError(errorText("reason"))
-    if (type === "exchange" && chosen.some((i) => !choice(i.line_item_id).size)) return setError(errorText("size"))
+    if (type === "exchange" && chosen.some((i) => !replacement(i))) return setError(errorText("size"))
     if (chosen.some((i) => PHOTO_REASONS.includes(choice(i.line_item_id).reason as ReturnReason)) && !photos.length) {
       return setError(errorText("photo_required"))
     }
@@ -74,7 +82,7 @@ export default function ReturnForm({ orderId, info, details }: { orderId: string
           quantity: c.quantity,
           reason: c.reason as ReturnReason,
           note: c.note.trim() || undefined,
-          exchange_variant_id: type === "exchange" ? c.size : undefined,
+          exchange_variant_id: type === "exchange" ? replacement(i) : undefined,
         }
       }),
       photos: photos.map((p) => p.id),
@@ -96,7 +104,7 @@ export default function ReturnForm({ orderId, info, details }: { orderId: string
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-3 font-medium">{r.whatToDo}</legend>
         {(["return", "exchange"] as const).map((k) => (
-          <label key={k} className={`flex cursor-pointer items-center gap-3 border bg-white p-4 ${type === k ? "border-ink" : "border-line"}`}>
+          <label key={k} className={`flex cursor-pointer items-center gap-3 rounded-xl border bg-white p-4 ${type === k ? "border-navy-900 ring-1 ring-navy-900" : "border-line"}`}>
             <input type="radio" name="type" className="h-4 w-4 accent-ink" checked={type === k} onChange={() => setType(k)} data-testid={`type-${k}`} />
             {k === "return" ? r.typeReturn : r.typeExchange}
           </label>
@@ -112,7 +120,7 @@ export default function ReturnForm({ orderId, info, details }: { orderId: string
           const why = !item.returnable ? (item.reason === "already_requested" ? r.alreadyRequested : item.reason === "exchange_item" ? r.exchangeItem : r.notReturnable) : null
           const sizes = item.exchange_options
           return (
-            <div key={item.line_item_id} className={`border bg-white p-4 ${c.checked ? "border-ink" : "border-line"}`} data-testid="return-item">
+            <div key={item.line_item_id} className={`rounded-xl border bg-white p-4 ${c.checked ? "border-navy-900 ring-1 ring-navy-900" : "border-line"}`} data-testid="return-item">
               <label className={`flex items-center gap-4 ${why ? "opacity-60" : "cursor-pointer"}`}>
                 <input
                   type="checkbox"
@@ -164,7 +172,15 @@ export default function ReturnForm({ orderId, info, details }: { orderId: string
                       ))}
                     </select>
                   </label>
-                  {type === "exchange" && (
+                  {type === "exchange" && sizes.length === 1 && (
+                    <p className="flex flex-col gap-1 text-sm">
+                      {r.newSize}
+                      <span className={`text-[13px] ${sizes[0].in_stock ? "text-saving" : "text-muted"}`} data-testid="return-replacement">
+                        {sizes[0].in_stock ? item.variant_title ?? item.title : r.noSizes}
+                      </span>
+                    </p>
+                  )}
+                  {type === "exchange" && sizes.length !== 1 && (
                     <label className="flex flex-col gap-1 text-sm">
                       {r.newSize}
                       {sizes.some((s) => s.in_stock) ? (
@@ -288,7 +304,7 @@ export default function ReturnForm({ orderId, info, details }: { orderId: string
       )}
 
       <p className="bg-surface px-4 py-3 text-sm">{r.pickupNote}</p>
-      <p role="alert" className={error ? "bg-brand-50 px-4 py-3 text-sm text-danger" : "sr-only"} data-testid="return-error">
+      <p role="alert" className={error ? "rounded-lg bg-brand-50 px-4 py-3 text-sm text-danger" : "sr-only"} data-testid="return-error">
         {error}
       </p>
       <button type="submit" className="btn-primary w-full small:w-auto small:self-start small:px-12" disabled={pending || uploading} data-testid="submit-return">

@@ -273,6 +273,12 @@ const en = {
     quickAdd: "Add",
     chooseOptions: "Choose options",
   },
+  optionNames: {
+    Configuration: "Configuration",
+    Memory: "Memory",
+    "Memory type": "Memory type",
+    Model: "Model",
+  },
   conditions: {
     new: "New",
     "open-box": "Open box",
@@ -556,7 +562,7 @@ const en = {
   checkout: {
     title: "Checkout",
     secure: "Secure checkout",
-    backToBag: "Back to bag",
+    backToBag: "Back to cart",
     loginTitle: "Log in to place your order",
     address: "Delivery address",
     payment: "Payment",
@@ -582,7 +588,7 @@ const en = {
     paymentCancelled: "The payment was not completed. You can try again.",
     summary: "Order summary",
     errors: {
-      out_of_stock: "Some items are not available in this quantity any more: {items}. Please update your bag.",
+      out_of_stock: "Some items are not available in this quantity any more: {items}. Please update your cart.",
       payment_not_received: "We have not received the payment yet. If money was taken from your account, it will be refunded automatically.",
       not_ready: "Please choose a delivery address first.",
       cod_unavailable: "Cash on delivery is not available for this pincode. Please pay online.",

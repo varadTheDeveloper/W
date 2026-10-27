@@ -5,7 +5,7 @@ import { useI18n } from "@lib/i18n/provider"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from "@modules/common/icons/ui"
 import Image from "next/image"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
 
 export type Slide = {
   key: "diwali" | "gaming" | "setups" | "openBox"
@@ -20,6 +20,14 @@ export type Slide = {
 
 const DELAY = 6500
 
+const MOTION_QUERY = "(prefers-reduced-motion: reduce)"
+const prefersReducedMotion = () => window.matchMedia(MOTION_QUERY).matches
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia(MOTION_QUERY)
+  mq.addEventListener("change", onChange)
+  return () => mq.removeEventListener("change", onChange)
+}
+
 /** Banner slider at the top of the home page: swipe, arrows, dots, pauses on hover. */
 export default function Hero({ slides }: { slides: Slide[] }) {
   const { t } = useI18n()
@@ -31,16 +39,14 @@ export default function Hero({ slides }: { slides: Slide[] }) {
 
   const go = useCallback((i: number) => setIndex(((i % count) + count) % count), [count])
 
-  useEffect(() => {
-    // No moving banners for people who asked their phone for less motion
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(false)
-  }, [])
+  // No moving banners for people who asked their phone for less motion
+  const reducedMotion = useSyncExternalStore(subscribeReducedMotion, prefersReducedMotion, () => false)
 
   useEffect(() => {
-    if (!playing || hover || count < 2) return
+    if (!playing || reducedMotion || hover || count < 2) return
     const timer = setTimeout(() => go(index + 1), DELAY)
     return () => clearTimeout(timer)
-  }, [index, playing, hover, count, go])
+  }, [index, playing, reducedMotion, hover, count, go])
 
   return (
     <section

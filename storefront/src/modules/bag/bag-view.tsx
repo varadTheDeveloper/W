@@ -78,7 +78,7 @@ export default function BagView({
       </h1>
 
       {!loggedIn && (
-        <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 bg-surface px-4 py-3 text-sm">
+        <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-navy-50 px-4 py-3 text-sm">
           {t.bag.loginPrompt}
           <LocalizedClientLink href="/account" prefetch={false} className="font-medium underline underline-offset-4">
             {t.bag.loginCta}
@@ -89,7 +89,7 @@ export default function BagView({
       <div className="mt-6 small:grid small:grid-cols-[1fr_360px] small:gap-12">
         <div>
           {error && (
-            <p role="alert" className="mb-3 bg-brand-50 px-4 py-2 text-sm text-danger">
+            <p role="alert" className="mb-3 rounded-lg bg-brand-50 px-4 py-2 text-sm text-danger">
               {error}
             </p>
           )}
@@ -182,7 +182,7 @@ export default function BagView({
         </div>
 
         <aside className="mt-8 small:mt-0" aria-label={t.bag.priceDetails}>
-          <div className="border border-line bg-white p-5 small:sticky small:top-36">
+          <div className="rounded-2xl border border-line bg-white p-5 small:sticky small:top-[100px]">
             <h2 className="eyebrow mb-4">{t.bag.priceDetails}</h2>
             <dl className="flex flex-col gap-3 text-sm" data-testid="bag-summary">
               <div className="flex justify-between">
@@ -205,7 +205,7 @@ export default function BagView({
               </div>
             </dl>
             {totals.discount > 0 && (
-              <p className="mt-3 bg-brand-50 px-3 py-2 text-[13px] text-saving">{format(t.bag.youSave, { amount: formatINR(totals.discount) })}</p>
+              <p className="mt-3 rounded-lg bg-saving/10 px-3 py-2 text-[13px] font-medium text-saving">{format(t.bag.youSave, { amount: formatINR(totals.discount) })}</p>
             )}
             <LocalizedClientLink href="/checkout?step=address" prefetch={false} className="btn-primary mt-5 hidden w-full small:flex" data-testid="checkout-button">
               {t.bag.placeOrder}

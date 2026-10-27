@@ -19,76 +19,71 @@ test.describe("languages", () => {
   })
 
   test("shows product text in the chosen language", async ({ page }) => {
-    await page.goto("/mr/products/cotton-straight-kurta")
-    await expect(page.getByTestId("pdp-title")).toHaveText("कॉटन स्ट्रेट कुर्ता")
-    await page.goto("/hi/products/slim-fit-oxford-shirt")
-    await expect(page.getByTestId("pdp-title")).toHaveText("स्लिम फिट ऑक्सफ़र्ड शर्ट")
-    await page.goto("/en/products/slim-fit-oxford-shirt")
-    await expect(page.getByTestId("pdp-title")).toHaveText("Slim Fit Oxford Shirt")
+    await page.goto("/mr/products/ryzen-5-5600gt-gaming-pc")
+    await expect(page.getByTestId("pdp-title")).toHaveText("Ryzen 5 5600GT गेमिंग आणि परफॉर्मन्स पीसी")
+    await page.goto("/hi/products/ryzen-5-5600gt-gaming-pc")
+    await expect(page.getByTestId("pdp-title")).toHaveText("Ryzen 5 5600GT गेमिंग और परफ़ॉर्मेंस पीसी")
+    await page.goto("/en/products/ryzen-5-5600gt-gaming-pc")
+    await expect(page.getByTestId("pdp-title")).toHaveText("Ryzen 5 5600GT Gaming & Performance PC")
   })
 })
 
-test("listing: filter by size and sort by price", async ({ page, isMobile }) => {
-  await page.goto("/en/categories/men")
-  await expect(page.getByTestId("listing-title")).toContainText("Men")
+test("listing: filter by brand and sort by price", async ({ page, isMobile }) => {
+  await page.goto("/en/categories/laptops")
+  await expect(page.getByTestId("listing-title")).toContainText("Laptops")
   const cards = page.getByTestId("product-card")
-  const before = await cards.count()
-  expect(before).toBeGreaterThan(1)
+  expect(await cards.count()).toBeGreaterThan(1)
 
-  // Waist sizes only exist on jeans
   if (isMobile) {
     await page.getByTestId("open-filters").click()
-    await page.getByTestId("filter-size-30").filter({ visible: true }).click()
-    await expect(page).toHaveURL(/size=30/)
+    await page.getByTestId("filter-brand-MSI").filter({ visible: true }).click()
+    await expect(page).toHaveURL(/brand=MSI/)
     await page.getByTestId("apply-filters").click()
   } else {
-    await page.getByTestId("filter-size-30").filter({ visible: true }).click()
-    await expect(page).toHaveURL(/size=30/)
+    await page.getByTestId("filter-brand-MSI").filter({ visible: true }).click()
+    await expect(page).toHaveURL(/brand=MSI/)
   }
   await expect(cards).toHaveCount(1)
-  await expect(cards.first()).toContainText("Jeans")
+  await expect(cards.first()).toContainText("MSI Thin GF63")
 
   if (!isMobile) {
-    await page.goto("/en/categories/men?sort=price-asc")
-    const amounts = (
-      await page.getByTestId("product-card").getByTestId("product-price").evaluateAll((els) =>
-        els.map((el) => Number(el.getAttribute("data-amount")))
-      )
-    )
+    await page.goto("/en/categories/laptops?sort=price-asc")
+    const amounts = await page
+      .getByTestId("product-card")
+      .getByTestId("product-price")
+      .evaluateAll((els) => els.map((el) => Number(el.getAttribute("data-amount"))))
     expect(amounts.length).toBeGreaterThan(1)
     expect([...amounts].sort((a, b) => a - b)).toEqual(amounts)
   }
 })
 
-test("product: pick colour and size, add to bag", async ({ page }) => {
-  await page.goto("/en/products/classic-crew-t-shirt")
-  await expect(page.getByTestId("product-price").first()).toHaveAttribute("data-amount", "499")
+test("product: choose a configuration, specs and price follow, add to cart", async ({ page }) => {
+  await page.goto("/en/products/hp-15s-laptop")
+  // Starts on the cheapest configuration
+  await expect(page.getByTestId("product-price").first()).toHaveAttribute("data-amount", "36990")
+  await expect(page.locator("#specifications")).toContainText("Intel Core i3-1215U")
 
-  // Adding without a size asks for one
-  await page.getByTestId("add-product-button").click()
-  await expect(page.getByText("Please select a size")).toBeVisible()
+  await page.getByRole("radio", { name: /Core i5/ }).click()
+  await expect(page.getByTestId("product-price").first()).toHaveAttribute("data-amount", "52990")
+  await expect(page.locator("#specifications")).toContainText("Intel Core i5-1235U")
 
-  // Black XXL is sold out in the demo data
-  await page.getByTestId("colour-black").click()
-  await expect(page.getByTestId("size-XXL")).toBeDisabled()
-
-  // White S has only 3 left
-  await page.getByTestId("colour-white").click()
-  await page.getByTestId("size-S").click()
-  await expect(page.getByTestId("low-stock")).toHaveText("Only 3 left")
-
-  await page.getByTestId("size-M").click()
   await page.getByTestId("add-product-button").click()
   await expect(page.getByTestId("go-to-bag")).toBeVisible()
   await page.getByTestId("go-to-bag").click()
   await expect(page).toHaveURL(/\/en\/cart/)
+  await expect(page.getByTestId("bag-item")).toContainText("Core i5 · 16GB · 512GB")
 })
 
-test("product: size chart and pincode", async ({ page }) => {
-  await page.goto("/en/products/slim-fit-stretch-jeans")
-  await page.getByTestId("size-chart-button").click()
-  await expect(page.getByTestId("size-chart-table")).toContainText("Waist")
-  await page.keyboard.press("Escape")
+test("product card: add straight to the cart", async ({ page }) => {
+  await page.goto("/en/categories/graphics-cards")
+  await page.getByTestId("product-card").filter({ hasText: "RTX 3050" }).getByTestId("quick-add").click()
+  await expect(page.getByTestId("quick-go-to-cart")).toBeVisible()
+})
+
+test("product: few left, and pincode check", async ({ page }) => {
+  // One left in the demo data
+  await page.goto("/en/products/apple-mac-mini-m4-open-box")
+  await expect(page.getByTestId("low-stock")).toHaveText("Only 1 left")
 
   await page.getByTestId("pincode-input").fill("12345")
   await page.getByRole("button", { name: "Check" }).click()
@@ -107,16 +102,50 @@ test("product: size chart and pincode", async ({ page }) => {
 })
 
 test("wishlist: save from a product card and see it on the wishlist page", async ({ page }) => {
-  await page.goto("/en/categories/men-jeans")
-  await page.getByTestId("product-card").first().getByTestId("wishlist-toggle").click()
+  await page.goto("/en/categories/graphics-cards")
+  await page.getByTestId("product-card").filter({ hasText: "RTX 3050" }).getByTestId("wishlist-toggle").click()
   await page.goto("/en/wishlist")
   await expect(page.getByTestId("wishlist-items").getByTestId("product-card")).toHaveCount(1)
-  await expect(page.getByTestId("wishlist-items")).toContainText("Jeans")
+  await expect(page.getByTestId("wishlist-items")).toContainText("RTX 3050")
 })
 
-test("search finds English words on the Marathi site", async ({ page }) => {
-  await page.goto("/mr/search?q=kurta")
-  await expect(page.getByTestId("product-card").first()).toContainText("कुर्ता")
-  await page.goto("/mr/search?q=jeens")
-  await expect(page.getByTestId("product-card")).toHaveCount(1)
+test("search: English words on the Marathi site, specs, typos, suggestions", async ({ page, isMobile }) => {
+  await page.goto("/mr/search?q=laptop")
+  await expect(page.getByTestId("product-card").first()).toContainText("Laptop")
+  await page.goto("/mr/search?q=rtx 3050")
+  await expect(page.getByTestId("product-card").first()).toBeVisible()
+  await page.goto("/en/search?q=prnter")
+  await expect(page.getByTestId("product-card").first()).toContainText("Printer")
+
+  // Suggestions while typing
+  await page.goto("/en")
+  const box = page.getByTestId("search-input").filter({ visible: true })
+  await box.fill("macbook")
+  await expect(page.getByRole("option").first()).toContainText("MacBook")
+  if (!isMobile) {
+    await box.press("ArrowDown")
+    await box.press("Enter")
+    await expect(page).toHaveURL(/\/en\/products\/apple-macbook-air-13/)
+  }
+})
+
+test("custom PC: the form opens WhatsApp with the answers", async ({ page }) => {
+  await page.goto("/en/custom-pc")
+  // Catch the WhatsApp link instead of opening it
+  await page.evaluate(() => {
+    ;(window as unknown as { opened: string[] }).opened = []
+    window.open = (url) => {
+      ;(window as unknown as { opened: string[] }).opened.push(String(url))
+      return null
+    }
+  })
+  await page.getByRole("button", { name: "₹60,000 – ₹90,000" }).click()
+  await page.getByRole("button", { name: "Gaming" }).click()
+  await page.getByLabel("Your name").fill("Rahul")
+  await page.getByTestId("custom-pc-form").getByRole("button", { name: "Send on WhatsApp" }).click()
+  const url = decodeURIComponent(await page.evaluate(() => (window as unknown as { opened: string[] }).opened[0]))
+  expect(url).toContain("919307570781")
+  expect(url).toContain("₹60,000 – ₹90,000")
+  expect(url).toContain("Gaming")
+  expect(url).toContain("Rahul")
 })

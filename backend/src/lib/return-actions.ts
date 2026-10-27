@@ -131,7 +131,7 @@ export async function approveRequest(scope: MedusaContainer, id: string) {
     const outbound = (options as any[]).find(
       (o) => o.provider_id === SHIPPING_PROVIDER_ID && !(o.rules ?? []).some((r: any) => r.attribute === "is_return" && r.value === "true")
     )
-    if (!outbound) throw new MedusaError(MedusaError.Types.NOT_FOUND, "No delivery option for the new size")
+    if (!outbound) throw new MedusaError(MedusaError.Types.NOT_FOUND, "No delivery option for the replacement")
     const { exchangeId, returnId } = await startMedusaExchange(
       scope,
       order.id,
@@ -141,7 +141,7 @@ export async function approveRequest(scope: MedusaContainer, id: string) {
           id: ri.line_item_id,
           quantity: ri.quantity,
           variant_id: ri.exchange_variant_id!,
-          // The new size costs what the customer paid for the old one
+          // The replacement costs what the customer paid for the old item
           unit_price: Number(ri.unit_paid ?? li?.unit_price),
         }
       }),

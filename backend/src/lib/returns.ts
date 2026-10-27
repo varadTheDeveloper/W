@@ -63,18 +63,14 @@ export function windowEnds(delivered: Date): Date {
   return new Date(delivered.getTime() + SHOP.returnWindowDays * DAY)
 }
 
-/** Size option value of a variant ("Size" option), if any. */
-function sizeOf(variant: any): string {
-  const opt = (variant.options ?? []).find((o: any) => /size/i.test(o.option?.title ?? ""))
-  return opt?.value ?? variant.title ?? ""
-}
-function colourOf(variant: any): string | undefined {
-  return (variant.options ?? []).find((o: any) => /colou?r/i.test(o.option?.title ?? ""))?.value
+/** Configuration name of a variant (its first option value, e.g. "Core i5 · 16GB · 512GB"). */
+function optionLabel(variant: any): string {
+  return variant.options?.[0]?.value ?? variant.title ?? ""
 }
 
 /**
- * Items of an order that its customer may return or exchange now, with the
- * sizes available for an exchange. Null when the order is not the customer's.
+ * Items of an order that its customer may return or have replaced now, with
+ * the replacement on offer (the same item, if in stock). Null when the order is not the customer's.
  */
 export async function eligibility(scope: MedusaContainer, orderId: string, customerId: string, now = new Date()): Promise<Eligibility | null> {
   const query = scope.resolve(ContainerRegistrationKeys.QUERY)
@@ -149,10 +145,10 @@ export async function eligibility(scope: MedusaContainer, orderId: string, custo
     const ordered = Number(item.quantity)
     const left = Math.max(0, ordered - (taken.get(item.id) ?? 0))
     const product = item.variant?.product
-    const colour = item.variant ? colourOf(item.variant) : undefined
+    // Computers: an exchange is a replacement with the same item (same configuration)
     const exchange_options: ExchangeOption[] = (variantsOf.get(product?.id) ?? [])
-      .filter((v: any) => v.id !== item.variant_id && colourOf(v) === colour)
-      .map((v: any) => ({ variant_id: v.id, size: sizeOf(v), in_stock: (stock.get(v.id) ?? 0) > 0 }))
+      .filter((v: any) => v.id === item.variant_id)
+      .map((v: any) => ({ variant_id: v.id, size: optionLabel(v), in_stock: (stock.get(v.id) ?? 0) > 0 }))
     // The admin metadata editor may save "false" as text
     const notReturnable = [false, "false"].includes(product?.metadata?.returnable)
     return {

@@ -24,43 +24,58 @@ export type PolicyTexts = {
 const en: PolicyTexts = {
   draft: "Draft for testing. This page has sample details and will be checked before the shop opens.",
   updated: "Last updated: {date}",
-  days: "Monday to Saturday",
+  days: "every day",
   pages: {
     about: {
       title: "About us",
-      description: "Who we are and how we make our clothes.",
-      intro: "{brand} makes comfortable, well-made clothing for every day and every festival, designed and made in India.",
+      description: "Computer Warehouse Jalna: laptops, gaming PCs, parts, printers and repairs in Old Jalna.",
+      intro: "{brand} is a multi-brand computer showroom in Old Jalna: laptops, gaming PCs, complete setups, PC parts, printers, CCTV and repairs, under one roof.",
       sections: [
         {
           heading: "Who we are",
           body: [
-            "{brand} is a brand of {legalName}, {address}.",
-            "We sell only our own products on this website. Every piece is checked before it is packed.",
+            "We are a local computer shop in Old Jalna, run by Amol Jagtap Patil, known for PCs built and tested in our own shop. Our customers rate us 4.9 out of 5 on Google, and more than 1.4 lakh people follow our Marathi reels on Instagram.",
+            "{brand} is run by {legalName}, {address}.",
+          ],
+        },
+        {
+          heading: "What we do",
+          body: [
+            "- New, open box and refurbished laptops and desktops from HP, ASUS, Acer, MSI, Apple and more.",
+            "- Gaming and work PCs built to your budget, assembled and stress-tested before delivery.",
+            "- PC parts, monitors, printers and accessories.",
+            "- Repairs, upgrades, data recovery, CCTV and networking.",
+            "- Computer labs and bulk orders for schools, offices and businesses.",
           ],
         },
         {
           heading: "Our promise",
           body: [
-            "- Clear prices: the price you see includes GST.",
-            "- Free delivery on orders of ₹{freeFrom} and above.",
-            "- Easy returns and size exchange within {returnDays} days of delivery.",
+            "- Genuine products with a GST invoice. The price you see includes GST.",
+            "- Free delivery on orders of ₹{freeFrom} and above, or free pickup from our shop.",
+            "- Replacement or refund for faulty or wrong items within {returnDays} days of delivery.",
             "- Cash on delivery for orders up to ₹{codMax}.",
+            "- Help on WhatsApp before and after you buy.",
           ],
         },
       ],
     },
     contact: {
       title: "Contact us",
-      description: "How to reach our customer care team.",
-      intro: "We are happy to help with orders, sizes, delivery and returns.",
+      description: "Phone, WhatsApp and address of Computer Warehouse Jalna.",
+      intro: "Call, WhatsApp or visit us. We are happy to help with choosing a product, orders, delivery, warranty and repairs.",
       sections: [
         {
-          heading: "Customer care",
-          body: ["Email: {email}", "Phone: {phone}", "Hours: {days}, {hoursFrom} to {hoursTo}"],
+          heading: "Shop and customer care",
+          body: ["Phone and WhatsApp: {phone}", "Email: {email}", "Open {days}, {hoursFrom} to {hoursTo}"],
+        },
+        {
+          heading: "Visit us",
+          body: ["{address}"],
         },
         {
           heading: "Seller",
-          body: ["{legalName}", "{address}", "GSTIN: {gstin}"],
+          body: ["{legalName}", "GSTIN: {gstin}"],
         },
         {
           heading: "Complaints",
@@ -102,36 +117,37 @@ const en: PolicyTexts = {
       ],
     },
     "returns-policy": {
-      title: "Returns and exchange policy",
-      description: "How to return an item or exchange it for another size.",
+      title: "Returns and replacement policy",
+      description: "What to do if an item arrives faulty, damaged or wrong.",
       sections: [
         {
           heading: "Within {returnDays} days",
           body: [
-            "You can return an item, or exchange it for another size, within {returnDays} days of delivery. Go to My orders, open the order and choose Return or exchange.",
-            "The item must be unused and unwashed, with its tags. Some items (for example innerwear) cannot be returned; the product page and the return form say so.",
+            "If an item arrives faulty, damaged or is not what you ordered, tell us within {returnDays} days of delivery. Go to My orders, open the order and choose Return or replace, or send us a WhatsApp message.",
+            "Keep the item in its original box with the bill, all accessories and free gifts. Items that were used roughly, opened for repair by someone else, or damaged after delivery cannot be returned.",
+          ],
+        },
+        {
+          heading: "Replacement",
+          body: [
+            "For a faulty or wrong item we send you the same item again, if it is in stock, at no extra charge. If it is out of stock, we refund you instead.",
           ],
         },
         {
           heading: "Free pickup",
-          body: ["After we approve your request, a courier collects the item from your delivery address. Pickup is free."],
-        },
-        {
-          heading: "Damaged or wrong item",
-          body: ["If an item arrives damaged or is not what you ordered, choose that reason and add a photo. We check it and arrange the pickup."],
+          body: ["After we approve your request, a courier collects the item from your delivery address. Pickup is free. In Jalna you can also bring it to our shop."],
         },
         {
           heading: "Refunds",
           body: [
             "- Paid online: the refund goes back to the card, UPI or bank you paid with, usually within 5–7 working days after we receive the item.",
             "- Cash on delivery: we send the refund to the UPI ID or bank account you give in the return form, usually within 5–7 working days after we receive the item.",
-            "The delivery charge is not refunded.",
           ],
         },
         {
-          heading: "Size exchange",
+          heading: "Warranty after {returnDays} days",
           body: [
-            "You can exchange for another size of the same product and colour, if it is in stock. We keep the new size for you when we approve the request and send it once the old one is back. There is no extra charge. Each item can be exchanged once.",
+            "After the return period, faults are covered by the brand warranty (or our shop warranty for our own builds and refurbished items). Bring the item to our shop or message us on WhatsApp and we help you with the claim.",
           ],
         },
       ],
@@ -179,7 +195,7 @@ const en: PolicyTexts = {
         },
         {
           heading: "Cookies",
-          body: ["We use only the cookies the shop needs to work: your login, your bag and your language. We do not use advertising or tracking cookies."],
+          body: ["We use only the cookies the shop needs to work: your login, your cart and your language. We do not use advertising or tracking cookies."],
         },
         {
           heading: "Your rights",
@@ -214,7 +230,7 @@ const en: PolicyTexts = {
           heading: "Prices and orders",
           body: [
             "Prices are in Indian rupees and include GST. Delivery charges are shown before you pay. An order is accepted when you receive the order confirmation. We may cancel an order (and refund it in full) if an item is out of stock or the price shown was clearly wrong.",
-            "Colours may look slightly different on screens. Size charts are a guide.",
+            "Product photos may show a similar model; the specifications on the product page are what you buy. Pictures marked as representative show the kind of parts used in our own builds.",
           ],
         },
         {
@@ -223,7 +239,7 @@ const en: PolicyTexts = {
         },
         {
           heading: "Delivery, cancellation and returns",
-          body: ["See our Shipping policy and our Returns and exchange policy."],
+          body: ["See our Shipping policy and our Returns and replacement policy."],
         },
         {
           heading: "Use of the website",
@@ -262,16 +278,18 @@ const en: PolicyTexts = {
     },
     faq: {
       title: "Frequently asked questions",
-      description: "Answers about orders, delivery, payment, sizes and returns.",
+      description: "Answers about orders, delivery, payment, warranty and returns.",
       sections: [
-        { heading: "How do I find my size?", body: ["Each product page has a size chart. If you are between two sizes, choose the larger one for a relaxed fit."] },
-        { heading: "When will my order arrive?", body: ["Enter your pincode on the product page to see the expected delivery date. Most orders arrive within 2–7 days of being shipped."] },
+        { heading: "Are your products genuine?", body: ["Yes. We sell sealed brand products with a GST invoice and the brand's warranty. Open box and refurbished items are clearly marked."] },
+        { heading: "What do open box and refurbished mean?", body: ["Open box: the box was opened (for example a display piece or a return) but the item is unused or barely used. Refurbished: a used item that we checked part by part and restored. Both come with a warranty, shown on the product page."] },
+        { heading: "Can you build a PC for my budget?", body: ["Yes. Use the Custom PC page or send us a WhatsApp message with your budget and what you will use it for. We suggest the parts, build it and test it."] },
+        { heading: "Prices change often. Is the price on the site final?", body: ["The price shown when you pay is the price you pay. Computer part prices change with the market, so the price may be different on another day."] },
+        { heading: "When will my order arrive?", body: ["Enter your pincode on the product page to see the expected delivery date. Most orders arrive within 2–7 days of being shipped. In Jalna you can also pick it up from our shop."] },
         { heading: "Is delivery free?", body: ["Yes, on orders of ₹{freeFrom} and above. Below that, delivery costs ₹{fee}."] },
-        { heading: "Can I pay cash on delivery?", body: ["Yes, for orders up to ₹{codMax} where the courier can collect cash."] },
-        { heading: "How do I track my order?", body: ["Log in and open My orders. You also get an email (and SMS) at each step."] },
-        { heading: "Can I cancel my order?", body: ["Yes, from My orders, until it is shipped."] },
-        { heading: "How do returns and exchanges work?", body: ["Within {returnDays} days of delivery, open the order under My orders and choose Return or exchange. A courier picks the item up for free."] },
-        { heading: "When do I get my refund?", body: ["Usually within 5–7 working days after we receive the returned item."] },
+        { heading: "Can I pay cash on delivery or with EMI?", body: ["Cash on delivery is available for orders up to ₹{codMax}. For EMI, choose credit card EMI or cardless EMI in the online payment window."] },
+        { heading: "Do I get a GST invoice?", body: ["Yes, for every order. You can download it under My orders."] },
+        { heading: "How do I track or cancel my order?", body: ["Log in and open My orders. You can cancel until the order is shipped."] },
+        { heading: "What if the item is faulty?", body: ["Within {returnDays} days of delivery we replace it or refund you (see the Returns policy). After that, the warranty covers it and we help you with the claim."] },
       ],
     },
   },

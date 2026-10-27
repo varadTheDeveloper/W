@@ -1,5 +1,8 @@
+"use client"
+
 import { BRAND } from "@config/brand"
-import { Dictionary, format } from "@lib/i18n"
+import { format } from "@lib/i18n"
+import { useI18n } from "@lib/i18n/provider"
 import { productBrand, productCondition, productHighlights, productSpecs, warrantyMonths } from "@lib/util/catalog"
 import { warrantyText } from "@lib/util/warranty"
 import { HttpTypes } from "@medusajs/types"
@@ -18,13 +21,17 @@ function Section({ title, open, children, id }: { title: string; open?: boolean;
   )
 }
 
-/**
- * Key features, specifications (with the first variant's own values; the
- * configuration picker above shows the others), description, warranty and returns.
- */
-export default function ProductDetails({ product, t }: { product: HttpTypes.StoreProduct; t: Dictionary }) {
+/** Key features, specifications of the chosen configuration, description, warranty and returns. */
+export default function ProductDetails({
+  product,
+  variant,
+}: {
+  product: HttpTypes.StoreProduct
+  variant?: HttpTypes.StoreProductVariant
+}) {
+  const { t } = useI18n()
   const highlights = productHighlights(product)
-  const specs = productSpecs(product)
+  const specs = productSpecs(product, variant)
   const brand = productBrand(product)
   const condition = productCondition(product)
   const label = (key: string) => (t.specs as Record<string, string>)[key] ?? key

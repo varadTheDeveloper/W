@@ -1,118 +1,128 @@
 import { describe, expect, it } from "vitest"
-import { JEANS, KURTA, TEE } from "./__fixtures__/products"
+import { GPU, LAPTOP, MAC_MINI } from "./__fixtures__/products"
 import {
-  availableSizes,
   buildFacets,
-  compareSizes,
   EMPTY_FILTERS,
   filtersToQuery,
-  imagesForColour,
+  hasPriceRange,
   inCollection,
+  isProductInStock,
   matchesFilters,
   parseFilters,
   parseSort,
+  productCondition,
+  productImages,
   productPrice,
-  productSizes,
+  productSpecs,
+  shopImage,
   sortProducts,
+  stockLeft,
+  variantChoice,
+  variantLabel,
 } from "./catalog"
 
-describe("sizes", () => {
-  it("orders letter, waist and kids sizes naturally", () => {
-    expect(["XL", "S", "XXL", "M", "XS"].sort(compareSizes)).toEqual(["XS", "S", "M", "XL", "XXL"])
-    expect(["32", "28", "36", "30"].sort(compareSizes)).toEqual(["28", "30", "32", "36"])
-    expect(["8-9Y", "2-3Y", "4-5Y"].sort(compareSizes)).toEqual(["2-3Y", "4-5Y", "8-9Y"])
-  })
-
-  it("lists all sizes, and only in-stock ones for availability", () => {
-    expect(productSizes(TEE)).toEqual(["S", "M", "XL"])
-    expect(availableSizes(TEE)).toEqual(["S", "XL"]) // M is sold out in every colour
-    expect(availableSizes(JEANS)).toEqual(["28", "30"])
-  })
-})
+const all = [LAPTOP, GPU, MAC_MINI]
+const ids = (list: typeof all) => list.map((p) => p.id)
 
 describe("prices", () => {
-  it("returns selling price, MRP and rounded % off", () => {
-    expect(productPrice(TEE)).toEqual({ price: 499, mrp: 799, discountPercent: 38 })
+  it("returns the lowest selling price with its MRP and rounded % off", () => {
+    expect(productPrice(LAPTOP)).toEqual({ price: 36990, mrp: 45999, discountPercent: 20 })
+    expect(hasPriceRange(LAPTOP)).toBe(true)
+    expect(hasPriceRange(GPU)).toBe(false)
   })
 
   it("shows no discount when price equals MRP", () => {
-    expect(productPrice(KURTA)).toEqual({ price: 2100, mrp: 2100, discountPercent: 0 })
+    expect(productPrice(MAC_MINI)).toEqual({ price: 47990, mrp: 47990, discountPercent: 0 })
   })
 })
 
-describe("images", () => {
-  it("picks pictures of the chosen colour, without mixing sky-blue into blue", () => {
-    expect(imagesForColour(TEE, "white")).toEqual([
-      "http://img/tshirt-white.webp",
-      "http://img/tshirt-white-detail.webp",
-    ])
-    expect(imagesForColour(TEE, "sky-blue")).toHaveLength(2)
+describe("product facts", () => {
+  it("reads condition, defaulting to new", () => {
+    expect(productCondition(MAC_MINI)).toBe("open-box")
+    expect(productCondition(GPU)).toBe("new")
   })
 
-  it("falls back to all pictures for an unknown colour", () => {
-    expect(imagesForColour(TEE, "purple")).toHaveLength(6)
+  it("puts the chosen configuration's specs in the usual order", () => {
+    const [i3] = LAPTOP.variants!
+    expect(productSpecs(LAPTOP, i3).map(([k]) => k)).toEqual(["processor", "ram", "display", "os"])
+    expect(productSpecs(LAPTOP, i3)[0][1]).toBe("Intel Core i3-1215U")
+    // Single-variant products use their only variant
+    expect(productSpecs(GPU).map(([k]) => k)).toEqual(["chipset", "memory"])
+  })
+
+  it("only offers a choice when there are several configurations", () => {
+    expect(variantChoice(LAPTOP)?.title).toBe("Configuration")
+    expect(variantChoice(GPU)).toBeUndefined()
+    expect(variantLabel(LAPTOP, LAPTOP.variants![1])).toBe("Core i5 · 16GB · 512GB")
+    expect(variantLabel(GPU, GPU.variants![0])).toBeUndefined()
+  })
+
+  it("counts stock across configurations", () => {
+    expect(stockLeft(LAPTOP)).toBe(6)
+    expect(isProductInStock(MAC_MINI)).toBe(false)
+  })
+
+  it("serves the shop's own photos as local files", () => {
+    expect(shopImage("http://localhost:8000/products/hp-15s.jpg")).toBe("/products/hp-15s.jpg")
+    expect(shopImage("https://shop.example.in/products/a.jpg")).toBe("/products/a.jpg")
+    expect(shopImage("https://api.example.in/static/upload.jpg")).toBe("https://api.example.in/static/upload.jpg")
+    expect(productImages(GPU)).toEqual(["/products/rtx-3050.jpg"])
   })
 })
 
 describe("filters", () => {
-  const all = [TEE, JEANS, KURTA]
-
-  it("reads filters from the address and ignores unknown price ranges", () => {
-    expect(parseFilters({ size: "S,M", colour: ["black"], price: "500-999,bogus" })).toEqual({
-      size: ["S", "M"],
-      colour: ["black"],
-      price: ["500-999"],
-      fabric: [],
+  it("reads filters from the address and ignores unknown values", () => {
+    expect(parseFilters({ brand: "HP,Apple", condition: ["open-box", "broken"], price: "30000-49999,bogus", stock: "1" })).toEqual({
+      brand: ["HP", "Apple"],
+      condition: ["open-box"],
+      price: ["30000-49999"],
+      stock: ["1"],
     })
     expect(parseSort({ sort: "price-asc" })).toBe("price-asc")
-    expect(parseSort({ sort: "hack" })).toBe("newest")
+    expect(parseSort({ sort: "hack" })).toBe("popular")
   })
 
   it("writes filters back to the address, keeping extra values", () => {
-    expect(filtersToQuery({ ...EMPTY_FILTERS, size: ["S", "M"] }, "discount", { q: "kurta" })).toBe(
-      "?q=kurta&size=S%2CM&sort=discount"
+    expect(filtersToQuery({ ...EMPTY_FILTERS, brand: ["HP", "MSI"] }, "discount", { q: "laptop" })).toBe(
+      "?q=laptop&brand=HP%2CMSI&sort=discount"
     )
-    expect(filtersToQuery(EMPTY_FILTERS, "newest")).toBe("")
-  })
-
-  it("matches only sizes that are in stock", () => {
-    const f = { ...EMPTY_FILTERS, size: ["M"] }
-    expect(all.filter((p) => matchesFilters(p, f)).map((p) => p.id)).toEqual(["kurta"])
+    expect(filtersToQuery(EMPTY_FILTERS, "popular")).toBe("")
   })
 
   it("combines groups with AND and values with OR", () => {
-    const f = { ...EMPTY_FILTERS, fabric: ["cotton"], price: ["0-499", "1000-1499"] }
-    expect(all.filter((p) => matchesFilters(p, f)).map((p) => p.id)).toEqual(["tee"])
+    expect(ids(all.filter((p) => matchesFilters(p, { ...EMPTY_FILTERS, brand: ["HP", "Apple"], price: ["30000-49999"] })))).toEqual([
+      "hp-15s",
+      "mac-mini",
+    ])
+    expect(ids(all.filter((p) => matchesFilters(p, { ...EMPTY_FILTERS, stock: ["1"] })))).toEqual(["hp-15s", "rtx-3050"])
+    expect(ids(all.filter((p) => matchesFilters(p, { ...EMPTY_FILTERS, condition: ["open-box"] })))).toEqual(["mac-mini"])
   })
 
   it("counts facets from the full list", () => {
     const facets = buildFacets(all)
-    expect(facets.size.map((s) => s.value)).toEqual(["S", "M", "XL", "28", "30"])
-    expect(facets.fabric).toEqual(
-      expect.arrayContaining([
-        { value: "cotton", count: 2 },
-        { value: "denim", count: 1 },
-      ])
-    )
-    expect(facets.price.map((p) => p.value)).toEqual(["0-499", "1000-1499", "2000-"])
+    expect(facets.brand.map((b) => b.value)).toEqual(["Apple", "Gigabyte", "HP"])
+    expect(facets.condition).toEqual([
+      { value: "new", count: 2 },
+      { value: "open-box", count: 1 },
+    ])
+    expect(facets.price.map((p) => p.value)).toEqual(["15000-29999", "30000-49999"])
+    expect(facets.stock).toEqual([{ value: "1", count: 2 }])
   })
 })
 
 describe("sorting", () => {
-  const all = [TEE, JEANS, KURTA]
-  const ids = (list: typeof all) => list.map((p) => p.id)
-
-  it("sorts by newest, price and discount", () => {
-    expect(ids(sortProducts(all, "newest"))).toEqual(["kurta", "tee", "jeans"])
-    expect(ids(sortProducts(all, "price-asc"))).toEqual(["tee", "jeans", "kurta"])
-    expect(ids(sortProducts(all, "price-desc"))).toEqual(["kurta", "jeans", "tee"])
-    expect(ids(sortProducts(all, "discount"))).toEqual(["jeans", "tee", "kurta"])
+  it("sorts by popularity, newest, price and discount", () => {
+    expect(ids(sortProducts(all, "popular"))[0]).toBe("hp-15s")
+    expect(ids(sortProducts(all, "popular")).at(-1)).toBe("mac-mini") // sold out last
+    expect(ids(sortProducts(all, "newest"))).toEqual(["hp-15s", "rtx-3050", "mac-mini"])
+    expect(ids(sortProducts(all, "price-asc"))).toEqual(["rtx-3050", "hp-15s", "mac-mini"])
+    expect(ids(sortProducts(all, "discount"))).toEqual(["rtx-3050", "hp-15s", "mac-mini"])
   })
 })
 
 describe("collections", () => {
   it("uses the extra collection handles in metadata", () => {
-    expect(inCollection(TEE, "new-arrivals")).toBe(true)
-    expect(inCollection(JEANS, "new-arrivals")).toBe(false)
+    expect(inCollection(LAPTOP, "deals")).toBe(true)
+    expect(inCollection(GPU, "deals")).toBe(false)
   })
 })

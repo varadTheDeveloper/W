@@ -23,14 +23,14 @@ Setting up Shiprocket, Razorpay and emails is in the `SETUP-*.md` guides.
   buttons and has not been tested end to end; the customer's button has.)*
 - After the parcel is shipped, an order cannot be cancelled. The customer returns it after delivery instead.
 
-## 3. Returns and size exchanges
+## 3. Returns and replacements
 
 ### The rules
 
 - Customers can ask within **7 days of delivery**, from their order page (My orders → the order →
-  **Return or exchange**). The number of days is `returnWindowDays` in `backend/src/config/shop.ts`.
-- **Return**: the money comes back. **Exchange**: the same item in another size (same colour), only if that
-  size is in stock. Each item can be exchanged once.
+  **Return or replace**). The number of days is `returnWindowDays` in `backend/src/config/shop.ts`.
+- **Return**: the money comes back. **Replacement**: the same item (same configuration) again, only if it is
+  in stock. Each item can be replaced once. After the return period, faults go through the warranty.
 - Return pickup is **free** for the customer.
 - For "Damaged" or "Wrong item", the customer must add a photo (up to 3).
 - Cash-on-delivery customers give a UPI ID or bank account for the refund. Online payments are refunded to
@@ -45,12 +45,12 @@ Open **Returns** in the admin menu. The **To do** tab lists everything waiting f
 | Needs decision | The customer asked | Read the reason, look at the photos. **Approve** or **Reject** (the customer sees your reason). |
 | Waiting for pickup | Approved; Shiprocket pickup booked | Nothing. The courier collects the parcel. If the page shows a pickup error, book the pickup in the Shiprocket panel yourself. |
 | On its way back | The courier picked it up | Wait for the parcel. |
-| On its way back → parcel arrives | | Check it: unused, tags on, the right item. Then press **Item received and checked**. The item goes back into stock. |
+| On its way back → parcel arrives | | Check it: original box, bill, all accessories, the fault the customer described. Then press **Item received and checked**. The item goes back into stock (send a faulty one to the brand's service centre instead of selling it). |
 | Send refund | Cash-on-delivery return received | Send the amount shown to the customer's UPI ID or bank account (from the shop's bank app). Then type the payment reference and press **Refund sent**. The customer's account details are then deleted. |
 | Refunded | Done | Online payments are refunded automatically through Razorpay when you press "Item received". |
-| Received – ship new size | Old size is back | Open the order and use **Create fulfillment** for the new item (already paid for: the customer pays nothing extra). The request completes when the courier picks up the new parcel. |
+| Received – replacement on its way | The old item is back | Open the order and use **Create fulfillment** for the replacement (already paid for: the customer pays nothing extra). The request completes when the courier picks up the new parcel. |
 
-When you approve an exchange, the new size is set aside for the customer, so it cannot sell out meanwhile.
+When you approve a replacement, one piece is set aside for the customer, so it cannot sell out meanwhile.
 
 If the parcel arrives used or damaged by the customer, do **not** press "Item received". Call the customer
 first; there is no "refuse after pickup" button yet.

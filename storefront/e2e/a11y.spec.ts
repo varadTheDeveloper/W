@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, Page, test } from "@playwright/test"
-import { addAddress, addKurta, logIn } from "./helpers"
+import { addAddress, addCombo, COMBO, logIn } from "./helpers"
 
 // Accessibility (WCAG 2.1 AA) checked with axe on the main pages, on desktop and phone.
 
@@ -10,7 +10,7 @@ async function check(page: Page, name: string) {
   expect(summary, `${name}\n${summary.join("\n")}`).toEqual([])
 }
 
-const PUBLIC = ["/mr", "/hi/store", "/en/products/cotton-straight-kurta", "/mr/search?q=kurta", "/mr/cart", "/mr/account", "/en/privacy", "/mr/faq"]
+const PUBLIC = ["/mr", "/hi/store", "/en/products/hp-15s-laptop", "/mr/search?q=laptop", "/en/custom-pc", "/mr/cart", "/mr/account", "/en/privacy", "/mr/faq"]
 
 for (const path of PUBLIC) {
   test(`a11y: ${path}`, async ({ page }) => {
@@ -20,10 +20,10 @@ for (const path of PUBLIC) {
   })
 }
 
-test("a11y: bag, checkout and account pages when logged in", async ({ page }) => {
-  await addKurta(page)
+test("a11y: cart, checkout and account pages when logged in", async ({ page }) => {
+  await addCombo(page)
   await page.goto("/en/cart")
-  await check(page, "bag")
+  await check(page, "cart")
   await page.goto("/en/checkout")
   await logIn(page)
   await addAddress(page)
@@ -34,15 +34,13 @@ test("a11y: bag, checkout and account pages when logged in", async ({ page }) =>
   }
 })
 
-test("keyboard only: choose a size, log in at checkout and place a cash order", async ({ page }, info) => {
+test("keyboard only: add to cart, log in at checkout and place a cash order", async ({ page }, info) => {
   test.skip(info.project.name !== "desktop", "keyboard test on desktop")
   const press = async (testId: string, key = "Enter") => {
     await page.getByTestId(testId).focus()
     await page.keyboard.press(key)
   }
-  await page.goto("/en/products/cotton-straight-kurta")
-  await press("colour-maroon")
-  await press("size-L")
+  await page.goto(`/en/products/${COMBO.handle}`)
   await press("add-product-button")
   await press("go-to-bag")
   await expect(page.getByTestId("bag-item")).toHaveCount(1)

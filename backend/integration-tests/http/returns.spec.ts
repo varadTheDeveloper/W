@@ -155,16 +155,18 @@ medusaIntegrationTestRunner({
       expect(razorpay.state.refunds).toContainEqual({ payment_id: payment.id, amount: Math.round(Number(item.total) * 100) })
     })
 
-    it("exchange: new size held on approval, old size back in stock, new parcel booked prepaid", async () => {
+    it("replacement: one piece held on approval, the old one back in stock, new parcel booked prepaid", async () => {
       const { order, customer } = await deliveredCodOrder()
       const item = order.items[0]
       const info = await returnsOf(order.id, customer)
+      // Computers: the replacement on offer is the same item
       const size = info.items[0].exchange_options.find((o: any) => o.in_stock)
+      expect(size.variant_id).toBe(item.variant_id)
       const newBefore = await stockOf(size.variant_id)
 
       const created = await api.post(
         `/store/orders/${order.id}/returns`,
-        { type: "exchange", items: [{ line_item_id: item.id, quantity: 1, reason: "too_small", exchange_variant_id: size.variant_id }] },
+        { type: "exchange", items: [{ line_item_id: item.id, quantity: 1, reason: "not_as_shown", exchange_variant_id: size.variant_id }] },
         { headers: customer }
       )
       const id = created.data.request.id
@@ -176,9 +178,9 @@ medusaIntegrationTestRunner({
       expect(received.data.return_request.status).toBe("received")
       expect((await stockOf(item.variant_id)).stocked).toBe(oldBefore.stocked + 1)
 
-      // Staff ship the new size from the order page
+      // Staff ship the replacement from the order page (a new order line, next to the old one)
       const { data } = await query().graph({ entity: "order", fields: ["items.*", "fulfillments.id"], filters: { id: order.id } })
-      const newItem = (data[0] as any).items.find((i: any) => i.variant_id === size.variant_id)
+      const newItem = (data[0] as any).items.find((i: any) => i.variant_id === size.variant_id && i.metadata?.return_request_id === id)
       expect(newItem.metadata).toMatchObject({ from_exchange: true, return_request_id: id })
       await createOrderFulfillmentWorkflow(getContainer()).run({ input: { order_id: order.id, items: [{ id: newItem.id, quantity: 1 }] } })
       const booked = [...shiprocket.state.orders.values()].pop()
@@ -186,7 +188,7 @@ medusaIntegrationTestRunner({
 
       await api.post("/hooks/delivery-updates", { awb: booked.awb, current_status: "IN TRANSIT" }, { headers: { "x-api-key": "hook-token" } })
       await waitFor(async () => (await returnsOf(order.id, customer)).requests[0].status === "completed")
-      // An exchanged item cannot be exchanged again
+      // A replaced item cannot be replaced again
       const after = await returnsOf(order.id, customer)
       expect(after.items.find((i: any) => i.line_item_id === newItem.id)).toMatchObject({ returnable: false, reason: "exchange_item" })
     })

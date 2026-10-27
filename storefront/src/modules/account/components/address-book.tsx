@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
 const field =
-  "h-12 w-full border border-line bg-white px-4 text-[16px] text-ink focus:border-ink focus:outline-none aria-[invalid=true]:border-danger"
+  "h-12 w-full rounded-xl border border-line bg-white px-4 text-[16px] text-ink focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-accent-400/50 aria-[invalid=true]:border-danger"
 
 export function toInput(a?: HttpTypes.StoreCustomerAddress, customer?: HttpTypes.StoreCustomer): AddressInput {
   const meta = (a?.metadata ?? {}) as { landmark?: string; type?: string }
@@ -81,10 +81,10 @@ export default function AddressBook({ customer }: { customer: HttpTypes.StoreCus
               />
             </li>
           ) : (
-            <li key={a.id} className="flex flex-col gap-3 border border-line bg-white p-5" data-testid="address-card">
+            <li key={a.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-5" data-testid="address-card">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{a.first_name}</span>
-                <span className="border border-line px-2 py-0.5 text-[11px] text-muted">
+                <span className="rounded-md bg-navy-50 px-2 py-0.5 text-[11px] font-semibold text-navy-700">
                   {(a.metadata as { type?: string } | null)?.type === "work" ? t.account.address.work : t.account.address.home}
                 </span>
                 {a.is_default_shipping && <span className="bg-ink px-2 py-0.5 text-[11px] text-white">{t.account.defaultBadge}</span>}
@@ -164,7 +164,7 @@ export function AddressForm({
   )
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 border border-ink bg-white p-5" data-testid="address-form">
+    <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border-2 border-navy-900 bg-white p-5" data-testid="address-form">
       <h2 className="font-heading text-xl">{title}</h2>
       <div className="grid gap-4 small:grid-cols-2">
         {text("fullName", a.fullName, { autoComplete: "name", maxLength: 80 })}

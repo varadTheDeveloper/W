@@ -36,10 +36,7 @@ export default function SearchBox({
   // Fetch suggestions shortly after typing stops
   useEffect(() => {
     const term = q.trim()
-    if (term.length < 2) {
-      setItems([])
-      return
-    }
+    if (term.length < 2) return
     const ctrl = new AbortController()
     const timer = setTimeout(() => {
       fetch(`/api/suggest?locale=${locale}&q=${encodeURIComponent(term)}`, { signal: ctrl.signal })
@@ -65,7 +62,7 @@ export default function SearchBox({
     return () => document.removeEventListener("mousedown", onDown)
   }, [])
 
-  const show = open && items.length > 0
+  const show = open && items.length > 0 && q.trim().length >= 2
   const big = size === "lg"
 
   return (

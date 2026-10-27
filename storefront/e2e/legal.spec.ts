@@ -20,7 +20,7 @@ test("legal pages: all pages in every language, details filled in", async ({ pag
   await expect(page.getByTestId("policy-draft")).toContainText("Draft for testing")
   await expect(page.getByTestId("policy-grievance")).toContainText("within 48 hours")
   await page.goto("/en/shipping")
-  await expect(page.getByTestId("policy-shipping")).toContainText("₹999")
+  await expect(page.getByTestId("policy-shipping")).toContainText("₹4,999")
 })
 
 test("legal pages: linked from the footer and the product page", async ({ page }) => {
@@ -29,11 +29,11 @@ test("legal pages: linked from the footer and the product page", async ({ page }
   await expect(page).toHaveURL(/\/en\/privacy$/)
   await expect(page.locator("h1")).toHaveText("Privacy policy")
 
-  await page.goto("/mr/products/cotton-straight-kurta")
-  await page.getByText("रिटर्न आणि बदल").first().click()
+  await page.goto("/mr/products/hp-15s-laptop")
+  await page.getByText("रिटर्न आणि रिप्लेसमेंट").first().click()
   await page.getByTestId("returns-policy-link").click()
   await expect(page).toHaveURL(/\/mr\/returns-policy$/)
-  await expect(page.locator("h1")).toHaveText("रिटर्न आणि बदल धोरण")
+  await expect(page.locator("h1")).toHaveText("रिटर्न आणि रिप्लेसमेंट धोरण")
 })
 
 test("account: delete my account, then the number starts a new account", async ({ page }) => {

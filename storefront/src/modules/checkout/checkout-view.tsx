@@ -192,7 +192,7 @@ export default function CheckoutView({ cart, customer, settings, details, estima
       : format(c.errors[error.code as keyof typeof c.errors] ?? c.errors.generic, { items: (error.items ?? []).join(", ") })
     : null
 
-  const section = "border border-line bg-white p-5 small:p-6"
+  const section = "rounded-2xl border border-line bg-white p-5 small:p-6"
   const stepTitle = (n: number, title: string, active: boolean) => (
     <h2 className={`flex items-center gap-3 font-heading text-xl ${active ? "" : "text-muted"}`}>
       <span className={`flex h-7 w-7 items-center justify-center text-sm font-sans ${active ? "bg-ink text-white" : "bg-surface text-muted"}`}>{n}</span>
@@ -246,7 +246,7 @@ export default function CheckoutView({ cart, customer, settings, details, estima
                     {!addresses.length && !adding && <p className="text-sm text-muted">{c.noAddress}</p>}
                     {!adding &&
                       addresses.map((a) => (
-                        <div key={a.id} className={`flex flex-col gap-2 border p-4 text-sm ${sameAddress(a, shipping) ? "border-ink" : "border-line"}`} data-testid="checkout-address-option">
+                        <div key={a.id} className={`flex flex-col gap-2 rounded-xl border p-4 text-sm ${sameAddress(a, shipping) ? "border-navy-900 ring-1 ring-navy-900" : "border-line"}`} data-testid="checkout-address-option">
                           <p className="font-medium">{a.first_name}</p>
                           <p className="text-muted">
                             {[a.address_1, a.address_2].filter(Boolean).join(", ")}, {a.city}, {a.province} {a.postal_code}
@@ -282,14 +282,14 @@ export default function CheckoutView({ cart, customer, settings, details, estima
                   <div className="mt-4 flex flex-col gap-3">
                     <fieldset className="flex flex-col gap-3" disabled={pending || !!cod}>
                       <legend className="sr-only">{c.payment}</legend>
-                      <label className={`flex cursor-pointer items-start gap-3 border p-4 ${method === "online" ? "border-ink" : "border-line"}`}>
+                      <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 ${method === "online" ? "border-navy-900 ring-1 ring-navy-900" : "border-line"}`}>
                         <input type="radio" name="method" className="mt-1 h-4 w-4 accent-ink" checked={method === "online"} onChange={() => setMethod("online")} data-testid="pay-online-option" />
                         <span>
                           <span className="block font-medium">{c.payOnline}</span>
                           <span className="text-[13px] text-muted">{c.payOnlineNote}</span>
                         </span>
                       </label>
-                      <label className={`flex items-start gap-3 border p-4 ${!codAllowed ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${method === "cod" ? "border-ink" : "border-line"}`}>
+                      <label className={`flex items-start gap-3 rounded-xl border p-4 ${!codAllowed ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${method === "cod" ? "border-navy-900 ring-1 ring-navy-900" : "border-line"}`}>
                         <input type="radio" name="method" className="mt-1 h-4 w-4 accent-ink" checked={method === "cod"} disabled={!codAllowed} onChange={() => setMethod("cod")} data-testid="cod-option" />
                         <span>
                           <span className="block font-medium">{c.cod}</span>
@@ -306,7 +306,7 @@ export default function CheckoutView({ cart, customer, settings, details, estima
 
                     {cod ? (
                       <form
-                        className="flex flex-col gap-3 border border-ink p-4"
+                        className="flex flex-col gap-3 rounded-xl border-2 border-navy-900 p-4"
                         onSubmit={(e) => {
                           e.preventDefault()
                           confirmCod()
@@ -316,7 +316,7 @@ export default function CheckoutView({ cart, customer, settings, details, estima
                         <p className="font-medium">{c.codTitle}</p>
                         <p className="text-sm text-muted">{format(c.codSentTo, { phone: cod.phone })}</p>
                         <input
-                          className="h-12 w-full border border-line bg-white px-4 text-center text-2xl tracking-[0.5em] focus:border-ink focus:outline-none"
+                          className="h-12 w-full rounded-xl border border-line bg-white px-4 text-center text-2xl tracking-[0.5em] focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
                           inputMode="numeric"
                           autoComplete="one-time-code"
                           maxLength={6}
@@ -361,14 +361,14 @@ export default function CheckoutView({ cart, customer, settings, details, estima
               {notice}
             </p>
           )}
-          <p role="alert" aria-live="assertive" className={errorText ? "bg-brand-50 px-4 py-3 text-sm text-danger" : "sr-only"} data-testid="checkout-error">
+          <p role="alert" aria-live="assertive" className={errorText ? "rounded-lg bg-brand-50 px-4 py-3 text-sm text-danger" : "sr-only"} data-testid="checkout-error">
             {errorText}
           </p>
         </div>
 
         {/* Order summary */}
         <aside className="mt-6 small:mt-0" aria-label={c.summary}>
-          <div className="border border-line bg-white p-5 small:sticky small:top-6">
+          <div className="rounded-2xl border border-line bg-white p-5 small:sticky small:top-6">
             <h2 className="eyebrow mb-4">{c.summary}</h2>
             <ul className="flex flex-col gap-4 border-b border-line pb-4">
               {items.map((item) => {
@@ -415,7 +415,7 @@ export default function CheckoutView({ cart, customer, settings, details, estima
             </dl>
             {toFree > 0 && <p className="mt-3 bg-surface px-3 py-2 text-[13px]">{format(c.addMoreForFree, { amount: formatINR(toFree) })}</p>}
             {totals.discount > 0 && (
-              <p className="mt-3 bg-brand-50 px-3 py-2 text-[13px] text-saving">{format(t.bag.youSave, { amount: formatINR(totals.discount) })}</p>
+              <p className="mt-3 rounded-lg bg-saving/10 px-3 py-2 text-[13px] font-medium text-saving">{format(t.bag.youSave, { amount: formatINR(totals.discount) })}</p>
             )}
           </div>
         </aside>

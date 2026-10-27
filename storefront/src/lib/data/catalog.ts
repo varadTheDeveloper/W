@@ -28,6 +28,9 @@ const PRODUCT_FIELDS = [
   "+variants.inventory_quantity",
   "+variants.manage_inventory",
   "+variants.allow_backorder",
+  // All variant fields, so its metadata (own specs, e.g. a laptop's RAM) comes along;
+  // "+variants.metadata" alone is dropped by the store API
+  "*variants",
   "*variants.images",
 ].join(",")
 

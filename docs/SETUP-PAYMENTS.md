@@ -87,14 +87,13 @@ Customers download a PDF tax invoice from their order page ("Download invoice").
 
 **Before launch, the client and their accountant must give:**
 1. Legal name, address, GSTIN and state for `backend/src/config/seller.ts` (now placeholders).
-2. A confirmation of the HSN code for each product (`hsn` in the product's metadata; the demo products
-   have common codes such as 6109 for T-shirts and 6211 for kurtas). Products without one use 6211.
+2. A confirmation of the HSN code for each product (the product's **HS code** field; the demo products
+   use 8471 for computers and laptops, 8473 for parts and accessories, 8528 for monitors, 8443 for printers).
 3. A check of the GST rules the shop uses (`backend/src/lib/gst.ts`):
-   - Clothing at **5%** when one piece costs up to ₹2,500 before tax, **18%** above that
-     (rates from 22 September 2025).
+   - Computers, laptops, parts, monitors, printers and accessories at **18%**.
    - Prices on the site include GST.
    - Delivery charges are taxed at the highest rate in the order.
    - CGST + SGST for buyers in the seller's state, IGST for other states.
-   - Invoice numbers look like `VS/2026-27/000123` (prefix / financial year / order number).
+   - Invoice numbers look like `CW/2026-27/000123` (prefix / financial year / order number).
 
 The shop does not file GST returns; the accountant does that from the orders.

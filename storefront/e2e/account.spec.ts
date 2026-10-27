@@ -66,33 +66,31 @@ test("addresses: add an Indian address and see it listed", async ({ page }) => {
   await expect(card).toContainText("Default")
 })
 
-test("bag: change quantity, totals follow, remove empties the bag", async ({ page }) => {
-  await page.goto("/en/products/cotton-straight-kurta")
-  await page.getByTestId("colour-maroon").click()
-  await page.getByTestId("size-L").click()
+test("cart: change quantity, totals follow, remove empties the cart", async ({ page }) => {
+  await page.goto("/en/products/zebronics-wireless-keyboard-mouse-combo")
   await page.getByTestId("add-product-button").click()
   await page.getByTestId("go-to-bag").click()
 
   await expect(page.getByTestId("bag-item")).toHaveCount(1)
-  await expect(page.getByTestId("bag-total")).toHaveText("₹899")
+  await expect(page.getByTestId("bag-total")).toHaveText("₹1,099")
   await page.getByTestId("bag-item-increase").click()
   await expect(page.getByTestId("bag-item-qty")).toHaveText("2")
-  await expect(page.getByTestId("bag-total")).toHaveText("₹1,798")
-  await expect(page.getByTestId("bag-summary")).toContainText("₹2,998") // MRP 2 × 1,499
+  await expect(page.getByTestId("bag-total")).toHaveText("₹2,198")
+  await expect(page.getByTestId("bag-summary")).toContainText("₹3,998") // MRP 2 × 1,999
 
   await page.getByTestId("bag-item-remove").click()
   await expect(page.getByTestId("empty-cart-message")).toBeVisible()
 })
 
 test("wishlist: hearts saved before login move into the account", async ({ page }) => {
-  await page.goto("/en/categories/men-jeans")
-  await page.getByTestId("product-card").first().getByTestId("wishlist-toggle").click()
+  await page.goto("/en/categories/graphics-cards")
+  await page.getByTestId("product-card").filter({ hasText: "RTX 3050" }).getByTestId("wishlist-toggle").click()
   await signUp(page, "Meera")
   await page.goto("/en/wishlist")
-  await expect(page.getByTestId("wishlist-items")).toContainText("Jeans")
+  await expect(page.getByTestId("wishlist-items")).toContainText("RTX 3050")
 
   // Saved in the account: a fresh browser with only the login cookie still sees it
   await page.evaluate(() => window.localStorage.clear())
   await page.reload()
-  await expect(page.getByTestId("wishlist-items")).toContainText("Jeans")
+  await expect(page.getByTestId("wishlist-items")).toContainText("RTX 3050")
 })

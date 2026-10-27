@@ -274,6 +274,12 @@ const hi: Dictionary = {
     quickAdd: "डालें",
     chooseOptions: "विकल्प चुनें",
   },
+  optionNames: {
+    Configuration: "कॉन्फ़िगरेशन",
+    Memory: "मेमोरी",
+    "Memory type": "मेमोरी का प्रकार",
+    Model: "मॉडल",
+  },
   conditions: {
     new: "नया",
     "open-box": "ओपन बॉक्स",
@@ -557,7 +563,7 @@ const hi: Dictionary = {
   checkout: {
     title: "चेकआउट",
     secure: "सुरक्षित चेकआउट",
-    backToBag: "बैग पर वापस जाएँ",
+    backToBag: "कार्ट पर वापस जाएँ",
     loginTitle: "ऑर्डर करने के लिए लॉग इन करें",
     address: "डिलीवरी का पता",
     payment: "भुगतान",
@@ -583,7 +589,7 @@ const hi: Dictionary = {
     paymentCancelled: "भुगतान पूरा नहीं हुआ। आप फिर से कोशिश कर सकते हैं।",
     summary: "ऑर्डर का सारांश",
     errors: {
-      out_of_stock: "कुछ सामान अब इतनी मात्रा में उपलब्ध नहीं है: {items}। कृपया अपना बैग बदलें।",
+      out_of_stock: "कुछ सामान अब इतनी मात्रा में उपलब्ध नहीं है: {items}। कृपया अपना कार्ट बदलें।",
       payment_not_received: "हमें अभी तक भुगतान नहीं मिला है। अगर आपके खाते से पैसे कट गए हैं, तो वे अपने-आप वापस आ जाएँगे।",
       not_ready: "कृपया पहले डिलीवरी का पता चुनें।",
       cod_unavailable: "इस पिनकोड पर कैश ऑन डिलीवरी उपलब्ध नहीं है। कृपया ऑनलाइन भुगतान करें।",

@@ -274,6 +274,12 @@ const mr: Dictionary = {
     quickAdd: "टाका",
     chooseOptions: "पर्याय निवडा",
   },
+  optionNames: {
+    Configuration: "कॉन्फिगरेशन",
+    Memory: "मेमरी",
+    "Memory type": "मेमरीचा प्रकार",
+    Model: "मॉडेल",
+  },
   conditions: {
     new: "नवीन",
     "open-box": "ओपन बॉक्स",
@@ -557,7 +563,7 @@ const mr: Dictionary = {
   checkout: {
     title: "चेकआउट",
     secure: "सुरक्षित चेकआउट",
-    backToBag: "बॅगकडे परत जा",
+    backToBag: "कार्टकडे परत जा",
     loginTitle: "ऑर्डर करण्यासाठी लॉग इन करा",
     address: "डिलिव्हरीचा पत्ता",
     payment: "पेमेंट",
@@ -583,7 +589,7 @@ const mr: Dictionary = {
     paymentCancelled: "पेमेंट पूर्ण झाले नाही. तुम्ही पुन्हा प्रयत्न करू शकता.",
     summary: "ऑर्डरचा सारांश",
     errors: {
-      out_of_stock: "काही वस्तू आता इतक्या संख्येत उपलब्ध नाहीत: {items}. कृपया तुमची बॅग बदला.",
+      out_of_stock: "काही वस्तू आता इतक्या संख्येत उपलब्ध नाहीत: {items}. कृपया तुमचे कार्ट बदला.",
       payment_not_received: "आम्हाला अजून पेमेंट मिळालेले नाही. तुमच्या खात्यातून पैसे कापले गेले असल्यास ते आपोआप परत येतील.",
       not_ready: "कृपया आधी डिलिव्हरीचा पत्ता निवडा.",
       cod_unavailable: "या पिनकोडवर कॅश ऑन डिलिव्हरी उपलब्ध नाही. कृपया ऑनलाइन पेमेंट करा.",

@@ -27,7 +27,7 @@ export default function CancelOrder({ orderId }: { orderId: string }) {
 
   return (
     <form
-      className="flex flex-col gap-3 border border-ink bg-white p-5"
+      className="flex flex-col gap-3 rounded-2xl border-2 border-navy-900 bg-white p-5"
       onSubmit={(e) => {
         e.preventDefault()
         if (!reason) return

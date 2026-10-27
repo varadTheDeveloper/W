@@ -28,7 +28,7 @@ export default function ReturnsSection({
     new Date(d).toLocaleDateString(locale === "en" ? "en-IN" : `${locale}-IN`, { day: "numeric", month: "long", timeZone: "Asia/Kolkata" })
 
   return (
-    <section className="mt-4 border border-line bg-white p-5 text-sm" data-testid="order-returns">
+    <section className="mt-4 rounded-2xl border border-line bg-white p-5 text-sm" data-testid="order-returns">
       <h2 className="eyebrow mb-3">{r.section}</h2>
       {sent && (
         <p role="status" className="mb-4 bg-surface px-3 py-2" data-testid="return-sent">
