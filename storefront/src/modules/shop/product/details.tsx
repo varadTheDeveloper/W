@@ -1,55 +1,79 @@
-import { Dictionary } from "@lib/i18n"
+import { BRAND } from "@config/brand"
+import { Dictionary, format } from "@lib/i18n"
+import { productBrand, productCondition, productHighlights, productSpecs, warrantyMonths } from "@lib/util/catalog"
+import { warrantyText } from "@lib/util/warranty"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { ChevronDownIcon } from "@modules/common/icons/ui"
+import { CheckIcon, ChevronDownIcon } from "@modules/common/icons/ui"
 
-function Section({ title, open, children }: { title: string; open?: boolean; children: React.ReactNode }) {
+function Section({ title, open, children, id }: { title: string; open?: boolean; children: React.ReactNode; id?: string }) {
   return (
-    <details open={open} className="group border-b border-line">
-      <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-[15px] [&::-webkit-details-marker]:hidden">
+    <details open={open} className="group border-b border-line last:border-0" id={id}>
+      <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-4 font-heading text-[15px] font-semibold small:px-5 [&::-webkit-details-marker]:hidden">
         {title}
-        <ChevronDownIcon size={18} strokeWidth={1.5} className="transition-transform group-open:rotate-180" />
+        <ChevronDownIcon size={18} className="text-muted transition-transform group-open:rotate-180" />
       </summary>
-      <div className="pb-4 text-sm leading-relaxed text-muted">{children}</div>
+      <div className="px-4 pb-5 text-sm leading-relaxed text-muted small:px-5">{children}</div>
     </details>
   )
 }
 
-/** Product facts. Country of origin is required on Indian e-commerce listings. */
+/**
+ * Key features, specifications (with the first variant's own values; the
+ * configuration picker above shows the others), description, warranty and returns.
+ */
 export default function ProductDetails({ product, t }: { product: HttpTypes.StoreProduct; t: Dictionary }) {
-  const meta = (product.metadata ?? {}) as Record<string, unknown>
-  const fit = t.product.fits[meta.fit as keyof typeof t.product.fits]
-  const care = t.product.cares[meta.care as keyof typeof t.product.cares]
-  const originCode = (meta.country_of_origin as string) ?? product.origin_country?.toUpperCase()
-  const origin = originCode ? t.product.countries[originCode as keyof typeof t.product.countries] ?? originCode : undefined
+  const highlights = productHighlights(product)
+  const specs = productSpecs(product)
+  const brand = productBrand(product)
+  const condition = productCondition(product)
+  const label = (key: string) => (t.specs as Record<string, string>)[key] ?? key
 
-  const rows = [
-    product.material && { label: t.product.fabric, value: product.material },
-    fit && { label: t.product.fit, value: fit },
-    care && { label: t.product.care, value: care },
-    origin && { label: t.product.countryOfOrigin, value: origin },
-  ].filter(Boolean) as { label: string; value: string }[]
+  const rows: [string, string][] = [
+    ...(brand ? [[t.product.brand, brand] as [string, string]] : []),
+    [t.product.condition, t.conditions[condition]],
+    ...specs.map(([k, v]) => [label(k), v] as [string, string]),
+    [t.product.warranty, warrantyText(warrantyMonths(product), t)],
+  ]
 
   return (
-    <div className="border-t border-line" data-testid="product-details">
-      <Section title={t.product.details} open>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2">
-          {rows.map((r) => (
-            <div key={r.label} className="contents">
-              <dt className="text-ink">{r.label}</dt>
-              <dd>{r.value}</dd>
-            </div>
-          ))}
-        </dl>
+    <div className="overflow-hidden rounded-2xl border border-line bg-white" data-testid="product-details">
+      {highlights.length > 0 && (
+        <Section title={t.product.highlights} open>
+          <ul className="grid gap-2 xsmall:grid-cols-2">
+            {highlights.map((h) => (
+              <li key={h} className="flex items-start gap-2 text-ink">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-saving text-white">
+                  <CheckIcon size={10} strokeWidth={3.5} />
+                </span>
+                {h}
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+      <Section title={t.product.specifications} open id="specifications">
+        <table className="w-full text-[13.5px]">
+          <tbody>
+            {rows.map(([k, v], i) => (
+              <tr key={k} className={i % 2 ? "" : "bg-surface/70"}>
+                <th scope="row" className="w-[38%] rounded-l-lg px-3 py-2.5 text-left align-top font-medium text-muted">
+                  {k}
+                </th>
+                <td className="rounded-r-lg px-3 py-2.5 align-top font-medium text-ink">{v}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </Section>
       {product.description && (
         <Section title={t.product.description}>
-          <p className="whitespace-pre-line">{product.description}</p>
+          <p className="whitespace-pre-line text-ink/85">{product.description}</p>
         </Section>
       )}
       <Section title={t.product.returns}>
-        <p>{t.product.returnsText}</p>
-        <LocalizedClientLink href="/returns-policy" className="mt-2 inline-block text-ink underline underline-offset-4" data-testid="returns-policy-link">
+        <p>{format(t.product.returnsText, { days: BRAND.returnDays })}</p>
+        <LocalizedClientLink href="/returns-policy" className="mt-2 inline-block font-medium text-navy-700 underline underline-offset-4" data-testid="returns-policy-link">
           {t.product.returnsPolicy}
         </LocalizedClientLink>
       </Section>

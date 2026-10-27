@@ -4,25 +4,31 @@ import { getDictionary } from "@lib/i18n"
 import { I18nProvider } from "@lib/i18n/provider"
 import { getBaseURL } from "@lib/util/env"
 import { Metadata, Viewport } from "next"
-import { Mukta, Tiro_Devanagari_Marathi } from "next/font/google"
+import { Inter, Mukta, Poppins } from "next/font/google"
 import "styles/globals.css"
 
-// Mukta covers Devanagari (Marathi, Hindi) and Latin in one family.
-// Not preloaded: with preloading, phones fetched all 10 font files (~415 KB) before
-// anything else. Without it the browser fetches only the weights and scripts a page
-// uses (English pages skip the Devanagari files), showing text in a fallback meanwhile.
+// Inter for English letters and numbers, Mukta for Marathi and Hindi letters (the
+// browser picks each font by character), Poppins for headings in all three.
+// Not preloaded: phones then fetch only the files a page really uses.
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: false,
+  variable: "--font-latin",
+})
+
 const mukta = Mukta({
-  subsets: ["devanagari", "latin"],
-  weight: ["400", "500", "600"],
+  subsets: ["devanagari"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   preload: false,
   variable: "--font-sans",
 })
 
-// Elegant serif for headings, with Devanagari and Latin letters.
-const tiro = Tiro_Devanagari_Marathi({
+const poppins = Poppins({
   subsets: ["devanagari", "latin"],
-  weight: "400",
+  weight: ["600", "700"],
   display: "swap",
   preload: false,
   variable: "--font-heading",
@@ -34,7 +40,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#1c1b19",
+  themeColor: "#0a1430",
 }
 
 export default async function LocaleLayout(props: {
@@ -44,7 +50,7 @@ export default async function LocaleLayout(props: {
   const locale = toLocale((await props.params).locale)
 
   return (
-    <html lang={locale} data-mode="light" className={`${mukta.variable} ${tiro.variable}`}>
+    <html lang={locale} data-mode="light" className={`${inter.variable} ${mukta.variable} ${poppins.variable}`}>
       <body className="bg-cream font-sans text-ink antialiased">
         <I18nProvider locale={locale} dictionary={getDictionary(locale)}>
           {props.children}

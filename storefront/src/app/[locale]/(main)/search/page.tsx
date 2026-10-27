@@ -24,14 +24,15 @@ export default async function SearchPage(props: Props) {
 
   if (!q) {
     return (
-      <div className="content-container py-6">
-        <SearchBox locale={locale} t={t} id="search-page" />
+      <div className="content-container py-6 small:py-12">
+        <h1 className="heading-lg mb-4">{t.common.search}</h1>
+        <SearchBox id="search-page" size="lg" className="max-w-2xl" />
       </div>
     )
   }
 
-  // Match against the text in the page language and in English, so "kurta"
-  // finds कुर्ता on the Marathi site too.
+  // Match against the text in the page language and in English, so "laptop"
+  // finds लॅपटॉप on the Marathi site too.
   const [local, english] = await Promise.all([
     listProductsFor(locale),
     locale === "en" ? Promise.resolve(null) : listProductsFor("en"),

@@ -39,11 +39,11 @@ const nextConfig = {
   // Elsewhere the usual build, so `next start` keeps working for development and CI.
   ...(process.env.NEXT_OUTPUT === "standalone" ? { output: "standalone" } : {}),
   images: {
+    // Development only: photos uploaded in the admin are served by the backend on localhost
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production" && process.env.ALLOW_LOCALHOST_IMAGES !== "false",
     remotePatterns: [
       // Local development and tests: photos served by the backend on localhost
       ...(process.env.ALLOW_LOCALHOST_IMAGES === "false" ? [] : [{ protocol: "http", hostname: "localhost" }]),
-      // Demo photos (Unsplash, free licence); remove once the brand's photos are in
-      { protocol: "https", hostname: "images.unsplash.com" },
       // Server: hosts of uploaded photos (S3 bucket or the API), comma-separated, set at build time
       ...(process.env.IMAGE_HOSTS ?? "")
         .split(",")

@@ -1,6 +1,5 @@
 import { format } from "@lib/i18n"
 import { Dictionary } from "@lib/i18n/dictionaries/en"
-import { colourName } from "@lib/i18n/colours"
 import { Locale } from "@lib/i18n/config"
 import { formatMobile } from "@lib/india"
 import { COD_PROVIDER_ID } from "@lib/util/checkout"
@@ -13,6 +12,7 @@ import Image from "next/image"
 import CancelOrder from "./cancel-order"
 import ReturnsSection from "./returns-section"
 import { ReturnInfo } from "@lib/data/returns"
+import { shopImage } from "@lib/util/catalog"
 
 type Step = "placed" | "packed" | "shipped" | "out_for_delivery" | "delivered"
 /** Which delivery steps the order has reached, and when. */
@@ -152,16 +152,16 @@ export default function OrderView({
         <ul className="divide-y divide-line">
           {items.map((item) => {
             const d = details[item.id] ?? {}
-            const image = d.image ?? item.thumbnail
+            const image = d.image ?? (item.thumbnail ? shopImage(item.thumbnail) : undefined)
             return (
               <li key={item.id} className="flex gap-4 py-4 first:pt-0 last:pb-0" data-testid="order-item">
-                <div className="relative aspect-[4/5] w-16 shrink-0 overflow-hidden bg-surface">
-                  {image && <Image src={image} alt="" fill sizes="64px" className="object-cover" />}
+                <div className="relative aspect-square w-16 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
+                  {image && <Image src={image} alt="" fill sizes="64px" className="object-contain p-1" />}
                 </div>
                 <div className="min-w-0 flex-1 text-sm">
                   <p>{d.title ?? item.product_title}</p>
                   <p className="text-[13px] text-muted">
-                    {[d.size && `${t.bag.size}: ${d.size}`, d.colour && `${t.bag.colour}: ${colourName(d.colour, locale)}`, `× ${item.quantity}`]
+                    {[d.option, `× ${item.quantity}`]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>

@@ -2,45 +2,102 @@ import { Dictionary } from "@lib/i18n"
 import { Locale } from "@lib/i18n/config"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { ChevronRightIcon } from "@modules/common/icons/ui"
+import { ArrowRightIcon } from "@modules/common/icons/ui"
 import ProductCard from "./product-card"
+import Scroller from "./scroller"
 
-/** Horizontal, swipeable row of products with a "View all" link. */
+/** Section title with an optional line under it and a "View all" link. */
+export function SectionHead({
+  title,
+  subtitle,
+  href,
+  t,
+  extra,
+  tone = "light",
+}: {
+  title: string
+  subtitle?: string
+  href?: string
+  t: Dictionary
+  extra?: React.ReactNode
+  tone?: "light" | "dark"
+}) {
+  return (
+    <div className="mb-5 flex items-end justify-between gap-4 small:mb-6">
+      <div className="min-w-0">
+        <h2 className={`heading-lg ${tone === "dark" ? "text-white" : ""}`}>{title}</h2>
+        {subtitle && <p className={`mt-1 text-sm ${tone === "dark" ? "text-white/70" : "text-muted"}`}>{subtitle}</p>}
+      </div>
+      <div className="flex shrink-0 items-center gap-4">
+        {extra}
+        {href && (
+          <LocalizedClientLink
+            href={href}
+            className={`group flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-[13px] font-semibold transition ${
+              tone === "dark" ? "bg-white/10 text-white hover:bg-white/20" : "bg-navy-50 text-navy-800 hover:bg-navy-100"
+            }`}
+          >
+            {t.common.viewAll}
+            <ArrowRightIcon size={15} className="transition-transform group-hover:translate-x-0.5" />
+          </LocalizedClientLink>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Sideways row of product cards with a heading and "View all". */
 export default function ProductRail({
   title,
+  subtitle,
   href,
   products,
   locale,
   t,
   priority = false,
+  extra,
+  max = 12,
 }: {
   priority?: boolean
   title: string
+  subtitle?: string
   href?: string
   products: HttpTypes.StoreProduct[]
   locale: Locale
   t: Dictionary
+  extra?: React.ReactNode
+  max?: number
 }) {
   if (!products.length) return null
   return (
-    <section className="content-container py-10 small:py-14">
-      <div className="mb-6 flex items-end justify-between">
-        <h2 className="heading-lg">{title}</h2>
-        {href && (
-          <LocalizedClientLink href={href} className="flex items-center gap-1 border-b border-ink pb-0.5 text-sm hover:opacity-70">
-            {t.common.viewAll}
-            <ChevronRightIcon size={16} />
-          </LocalizedClientLink>
-        )}
-      </div>
-      <ul className="no-scrollbar -mx-4 flex scroll-px-4 snap-x snap-mandatory gap-2 overflow-x-auto px-4 small:mx-0 small:grid small:grid-cols-4 small:gap-4 small:overflow-visible small:px-0">
-        {products.slice(0, 8).map((p, i) => (
-          // Computers show one full row of 4; phones swipe through up to 8
-          <li key={p.id} className={`w-[46%] shrink-0 snap-start small:w-auto ${i >= 4 ? "small:hidden" : ""}`}>
-            <ProductCard product={p} locale={locale} t={t} priority={priority && i < 2} />
-          </li>
-        ))}
-      </ul>
+    <section className="content-container py-6 small:py-9">
+      <SectionHead title={title} subtitle={subtitle} href={href} t={t} extra={extra} />
+      <Rail products={products.slice(0, max)} locale={locale} t={t} priority={priority} label={title} />
     </section>
+  )
+}
+
+/** Just the sliding row of cards (for sections with their own heading). */
+export function Rail({
+  products,
+  locale,
+  t,
+  priority = false,
+  label,
+}: {
+  products: HttpTypes.StoreProduct[]
+  locale: Locale
+  t: Dictionary
+  priority?: boolean
+  label: string
+}) {
+  return (
+    <Scroller label={label}>
+      {products.map((p, i) => (
+        <li key={p.id} className="w-[46%] shrink-0 snap-start xsmall:w-[31%] small:w-[calc((100%-3rem)/4)] medium:w-[calc((100%-4rem)/5)]">
+          <ProductCard product={p} locale={locale} t={t} priority={priority && i < 2} />
+        </li>
+      ))}
+    </Scroller>
   )
 }

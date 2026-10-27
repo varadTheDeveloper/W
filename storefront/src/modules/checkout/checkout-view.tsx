@@ -11,7 +11,6 @@ import {
   startOnlinePayment,
 } from "@lib/data/checkout"
 import { format } from "@lib/i18n"
-import { colourName } from "@lib/i18n/colours"
 import { useI18n } from "@lib/i18n/provider"
 import { formatMobile } from "@lib/india"
 import { formatINR } from "@lib/util/money"
@@ -24,6 +23,7 @@ import { bagTotals, LineDetails, linePrices } from "@modules/bag/bag-view"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
+import { shopImage } from "@lib/util/catalog"
 
 type Method = "online" | "cod"
 
@@ -374,16 +374,16 @@ export default function CheckoutView({ cart, customer, settings, details, estima
               {items.map((item) => {
                 const d = details[item.id] ?? {}
                 const p = linePrices(item)
-                const image = d.image ?? item.thumbnail
+                const image = d.image ?? (item.thumbnail ? shopImage(item.thumbnail) : undefined)
                 return (
                   <li key={item.id} className="flex gap-3" data-testid="checkout-item">
-                    <div className="relative aspect-[4/5] w-14 shrink-0 overflow-hidden bg-surface">
-                      {image && <Image src={image} alt="" fill sizes="56px" className="object-cover" />}
+                    <div className="relative aspect-square w-14 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
+                      {image && <Image src={image} alt="" fill sizes="56px" className="object-contain p-1" />}
                     </div>
                     <div className="min-w-0 flex-1 text-[13px]">
                       <p className="line-clamp-2 text-sm">{d.title ?? item.product_title}</p>
                       <p className="text-muted">
-                        {[d.size && `${t.bag.size}: ${d.size}`, d.colour && `${t.bag.colour}: ${colourName(d.colour, locale)}`, `× ${item.quantity}`]
+                        {[d.option, `× ${item.quantity}`]
                           .filter(Boolean)
                           .join(" · ")}
                       </p>

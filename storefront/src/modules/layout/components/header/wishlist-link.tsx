@@ -11,13 +11,13 @@ export default function WishlistLink({ className = "" }: { className?: string })
   return (
     <LocalizedClientLink
       href="/wishlist"
-      className={`relative flex h-10 w-10 items-center justify-center hover:opacity-70 ${className}`}
+      className={`relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-white/10 ${className}`}
       aria-label={`${t.wishlist.title} (${handles.length})`}
       data-testid="nav-wishlist-link"
     >
-      <HeartIcon size={22} />
+      <HeartIcon size={24} />
       {handles.length > 0 && (
-        <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-semibold text-white">
+        <span className="absolute right-0 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-500 px-1 text-[11px] font-bold text-white ring-2 ring-navy-900">
           {handles.length}
         </span>
       )}

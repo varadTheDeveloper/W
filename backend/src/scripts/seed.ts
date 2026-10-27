@@ -37,7 +37,6 @@ import {
   LOCALES,
   PRODUCTS,
 } from "./data/catalogue";
-import DEMO_PHOTOS from "./data/demo-photos.json";
 import { SHOP } from "../config/shop";
 import { SELLER } from "../config/seller";
 import { COD_PROVIDER_ID, RAZORPAY_PROVIDER_ID } from "../lib/payment-ids";
@@ -334,14 +333,13 @@ type SeedIds = {
   storeId: string;
 };
 
-const DEFAULT_STOCK = 40;
-
-type DemoPhoto = {
-  url: string;
-  alt: string | null;
-  credit: { name: string; profile: string; photo: string };
-};
-const PHOTOS = DEMO_PHOTOS as Record<string, DemoPhoto[]>;
+/**
+ * Product photos live in the storefront (storefront/public/products) and are
+ * linked by full address, so they also show in the admin panel.
+ * STOREFRONT_URL is the shop's public address (http://localhost:8000 locally).
+ */
+const photoUrl = (file: string) =>
+  `${(process.env.STOREFRONT_URL || "http://localhost:8000").replace(/\/$/, "")}/products/${file}`;
 
 async function seedCatalogue(container: ExecArgs["container"], ids: SeedIds) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -404,30 +402,14 @@ async function seedCatalogue(container: ExecArgs["container"], ids: SeedIds) {
   const { result: products } = await createProductsWorkflow(container).run({
     input: {
       products: PRODUCTS.map((p) => {
-        // Each picture remembers its colour and photographer (shown on the credits page).
-        const images = p.colours.flatMap((colour) =>
-          (PHOTOS[`${p.handle}/${colour}`] ?? []).map((photo) => ({
-            url: photo.url,
-            metadata: {
-              colour,
-              alt: photo.alt,
-              credit_name: photo.credit.name,
-              credit_profile: photo.credit.profile,
-              credit_photo: photo.credit.photo,
-            },
-          }))
-        );
-        if (!images.length) {
-          throw new Error(`No demo photos for ${p.handle}`);
-        }
+        const optionTitle = p.option ?? "Model";
         return {
           title: p.title.en,
           handle: p.handle,
           description: p.description.en,
-          material: p.material.en,
           origin_country: "IN",
           // HSN code for courier and invoice papers
-          hs_code: p.metadata.hsn,
+          hs_code: p.hsn,
           weight: p.weight,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: ids.shippingProfileId,
@@ -436,24 +418,30 @@ async function seedCatalogue(container: ExecArgs["container"], ids: SeedIds) {
             ? collectionIds[p.collections[0]]
             : undefined,
           category_ids: p.categories.map((h) => categoryIds[h]),
-          thumbnail: images[0].url,
-          images,
-          metadata: { ...p.metadata, badge: p.badge, collections: p.collections ?? [] },
-          options: [
-            { title: "Size", values: p.sizes },
-            { title: "Colour", values: p.colours },
-          ],
-          variants: p.colours.flatMap((colour) =>
-            p.sizes.map((size) => ({
-              title: `${size} / ${colour}`,
-              sku: `${p.handle}-${colour}-${size}`.toUpperCase(),
-              options: { Size: size, Colour: colour },
-              manage_inventory: true,
-              // Grams, used for the courier's package weight
-              weight: p.weight,
-              prices: [{ amount: p.mrp, currency_code: "inr" }],
-            }))
-          ),
+          thumbnail: photoUrl(p.images[0]),
+          images: p.images.map((file) => ({ url: photoUrl(file) })),
+          metadata: {
+            brand: p.brand,
+            condition: p.condition,
+            warranty_months: p.warrantyMonths,
+            highlights: p.highlights,
+            specs: p.specs,
+            badge: p.badge,
+            collections: p.collections ?? [],
+            representative_photo: p.representative ?? false,
+            price_source: p.priceSource,
+            source_post: p.sourcePost,
+          },
+          options: [{ title: optionTitle, values: p.variants.map((v) => v.name) }],
+          variants: p.variants.map((v, i) => ({
+            title: v.name,
+            sku: `${p.handle}-${i + 1}`.toUpperCase(),
+            options: { [optionTitle]: v.name },
+            manage_inventory: true,
+            weight: p.weight,
+            metadata: v.specs ? { specs: v.specs } : undefined,
+            prices: [{ amount: v.mrp, currency_code: "inr" }],
+          })),
           sales_channels: [{ id: ids.salesChannelId }],
         };
       }),
@@ -465,17 +453,22 @@ async function seedCatalogue(container: ExecArgs["container"], ids: SeedIds) {
     entity: "product_variant",
     fields: ["id", "sku", "product.handle", "inventory_items.inventory_item_id"],
   });
-  const productByHandle = Object.fromEntries(PRODUCTS.map((p) => [p.handle, p]));
+  // SKU is HANDLE-<n>, n counting variants from 1
+  const variantDef = (v: (typeof variants)[number]) => {
+    const p = PRODUCTS.find((x) => x.handle === v.product!.handle)!;
+    const n = Number(v.sku!.slice(p.handle.length + 1)) - 1;
+    return p.variants[n];
+  };
   await createPriceListsWorkflow(container).run({
     input: {
       price_lists_data: [
         {
-          title: "Launch prices",
-          description: "Selling prices below MRP",
+          title: "Shop prices",
+          description: "Selling prices below MRP (demo prices until the shop confirms them)",
           status: PriceListStatus.ACTIVE,
           prices: variants.map((v) => ({
             variant_id: v.id,
-            amount: productByHandle[v.product!.handle].price,
+            amount: variantDef(v).price,
             currency_code: "inr",
           })),
         },
@@ -484,19 +477,13 @@ async function seedCatalogue(container: ExecArgs["container"], ids: SeedIds) {
   });
 
   logger.info("Seeding stock...");
-  const inventoryLevels: CreateInventoryLevelInput[] = variants.flatMap((v) => {
-    const p = productByHandle[v.product!.handle];
-    // SKU is HANDLE-COLOUR-SIZE; the override key is "SIZE/colour".
-    const rest = v.sku!.slice(p.handle.length + 1).toLowerCase();
-    const colour = p.colours.find((c) => rest.startsWith(`${c}-`))!;
-    const size = p.sizes.find((s) => rest === `${colour}-${s.toLowerCase()}`)!;
-    const stock = p.stock?.[`${size}/${colour}`] ?? DEFAULT_STOCK;
-    return (v.inventory_items ?? []).map((ii) => ({
+  const inventoryLevels: CreateInventoryLevelInput[] = variants.flatMap((v) =>
+    (v.inventory_items ?? []).map((ii) => ({
       location_id: ids.stockLocationId,
-      stocked_quantity: stock,
+      stocked_quantity: variantDef(v).stock,
       inventory_item_id: ii!.inventory_item_id,
-    }));
-  });
+    }))
+  );
   await createInventoryLevelsWorkflow(container).run({
     input: { inventory_levels: inventoryLevels },
   });
@@ -527,7 +514,6 @@ async function seedCatalogue(container: ExecArgs["container"], ids: SeedIds) {
       translations: {
         title: p.title[key],
         description: p.description[key],
-        material: p.material[key],
       },
     })),
   ]);

@@ -2,7 +2,6 @@
 
 import { deleteLineItem, updateLineItem } from "@lib/data/cart"
 import { format } from "@lib/i18n"
-import { colourName } from "@lib/i18n/colours"
 import { useI18n } from "@lib/i18n/provider"
 import { formatINR } from "@lib/util/money"
 import { useWishlist } from "@lib/wishlist"
@@ -10,13 +9,14 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
 import { useState, useTransition } from "react"
+import { shopImage } from "@lib/util/catalog"
 
 const MAX_QTY = 10
 
 type Line = HttpTypes.StoreCartLineItem
 
-/** Name, size, colour and picture of a bag line, looked up in the catalogue (in the page language). */
-export type LineDetails = { title?: string; size?: string; colour?: string; image?: string }
+/** Name, chosen configuration and picture of a cart line, looked up in the catalogue (in the page language). */
+export type LineDetails = { title?: string; option?: string; image?: string; handle?: string }
 
 /** MRP and selling price for a line (MRP falls back to the selling price). */
 export function linePrices(item: Line) {
@@ -97,11 +97,10 @@ export default function BagView({
             {items.map((item) => {
               const p = linePrices(item)
               const d = details[item.id] ?? {}
-              const { size, colour } = d
               const handle = item.product_handle ?? item.product?.handle ?? ""
               const off = p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0
               const lineBusy = busy === item.id && pending
-              const image = d.image ?? item.thumbnail
+              const image = d.image ?? (item.thumbnail ? shopImage(item.thumbnail) : undefined)
               return (
                 <li key={item.id} className={`flex gap-4 py-5 ${lineBusy ? "opacity-60" : ""}`} data-testid="bag-item">
                   {/* Same link as the title: hidden from screen readers and the keyboard */}
@@ -109,19 +108,15 @@ export default function BagView({
                     href={`/products/${handle}`}
                     aria-hidden="true"
                     tabIndex={-1}
-                    className="relative aspect-[4/5] w-24 shrink-0 overflow-hidden bg-surface small:w-28"
+                    className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-xl border border-line bg-white small:w-28"
                   >
-                    {image && <Image src={image} alt="" fill sizes="112px" className="object-cover" />}
+                    {image && <Image src={image} alt="" fill sizes="112px" className="object-contain p-2" />}
                   </LocalizedClientLink>
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <LocalizedClientLink href={`/products/${handle}`} className="line-clamp-2 text-[15px] hover:underline" data-testid="bag-item-title">
                       {d.title ?? item.product_title}
                     </LocalizedClientLink>
-                    <p className="text-[13px] text-muted">
-                      {size && `${t.bag.size}: ${size}`}
-                      {size && colour && " · "}
-                      {colour && `${t.bag.colour}: ${colourName(colour, locale)}`}
-                    </p>
+                    {d.option && <p className="text-[13px] text-muted">{d.option}</p>}
                     <p className="flex flex-wrap items-baseline gap-x-2 text-[15px]">
                       <span className="font-medium" data-testid="bag-item-price">{formatINR(p.price * p.qty)}</span>
                       {off > 0 && (

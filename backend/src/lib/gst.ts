@@ -1,21 +1,18 @@
-// GST on clothing sold to customers in India. Shop prices include GST.
+// GST on computers and accessories sold to customers in India. Shop prices include GST.
 //
-// Rates (from 22 September 2025): 5% when a piece's value before GST is up to
-// ₹2,500, 18% above. Each piece is judged on its own price after discounts.
-// Delivery charges follow the main item (composite supply): the highest rate
-// in the order. Confirm these rules with the accountant before launch.
+// Laptops, desktops, parts, monitors, printers and accessories (HSN 8471, 8473,
+// 8528, 8443) are all 18%. Delivery charges follow the main item (composite
+// supply): the highest rate in the order. Confirm with the accountant before launch.
 //
 // Same state as the seller: CGST + SGST (half each); other states: IGST.
 
-export const LOW_RATE = 5
-export const HIGH_RATE = 18
-export const LOW_RATE_MAX_VALUE = 2500
+export const STANDARD_RATE = 18
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 
-/** GST rate for one piece sold at `unitPrice` (GST included). */
-export function clothingRate(unitPrice: number): number {
-  return unitPrice / (1 + LOW_RATE / 100) <= LOW_RATE_MAX_VALUE ? LOW_RATE : HIGH_RATE
+/** GST rate for an item with this HSN code. Every product the shop sells today is 18%. */
+export function gstRate(_hsn: string): number {
+  return STANDARD_RATE
 }
 
 export type GstLineInput = {
@@ -69,9 +66,9 @@ export function gstSummary(
   buyerStateCode: string | null
 ): GstSummary {
   const intraState = !buyerStateCode || buyerStateCode === sellerStateCode
-  const lines = items.map((i) => split(i, clothingRate(i.total / Math.max(1, i.quantity)), intraState))
+  const lines = items.map((i) => split(i, gstRate(i.hsn), intraState))
   if (shipping > 0) {
-    const rate = Math.max(LOW_RATE, ...lines.map((l) => l.rate))
+    const rate = Math.max(STANDARD_RATE, ...lines.map((l) => l.rate))
     lines.push(split({ description: "Delivery charges", hsn: "9965", quantity: 1, total: shipping }, rate, intraState))
   }
   const sum = (k: "taxable" | "cgst" | "sgst" | "igst" | "total") => round2(lines.reduce((a, l) => a + l[k], 0))

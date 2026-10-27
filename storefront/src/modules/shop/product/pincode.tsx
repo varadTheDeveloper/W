@@ -25,9 +25,9 @@ export default function PincodeCheck() {
   }
 
   return (
-    <div className="border-t border-line pt-5">
-      <p className="mb-3 flex items-center gap-2 text-sm">
-        <TruckIcon size={20} strokeWidth={1.5} />
+    <div>
+      <p className="mb-2.5 flex items-center gap-2 text-sm font-semibold">
+        <TruckIcon size={20} className="text-navy-700" />
         {t.product.delivery}
       </p>
       <form onSubmit={check} className="flex gap-2">
@@ -43,11 +43,11 @@ export default function PincodeCheck() {
             autoComplete="postal-code"
             placeholder={t.product.pincodePlaceholder}
             aria-label={t.product.pincodePlaceholder}
-            className="h-11 w-full border border-line bg-white pl-9 pr-3 focus:border-ink focus:outline-none"
+            className="h-11 w-full rounded-xl border border-line bg-white pl-9 pr-3 focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
             data-testid="pincode-input"
           />
         </div>
-        <button type="submit" className="h-11 border border-ink px-5 text-sm hover:bg-ink hover:text-white" disabled={pending}>
+        <button type="submit" className="h-11 rounded-xl border border-navy-900 px-5 text-sm font-semibold text-navy-900 transition-colors hover:bg-navy-900 hover:text-white" disabled={pending}>
           {t.product.check}
         </button>
       </form>

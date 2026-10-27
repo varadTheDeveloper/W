@@ -5,15 +5,16 @@
 
 export const SHOP = {
   /** Delivery is free when the items total at least this much */
-  freeShippingFrom: 999,
+  freeShippingFrom: 4999,
   /** Delivery charge below that */
-  shippingFee: 79,
-  /** Cash on delivery only for orders up to this total (delivery included) */
-  codMaxOrder: 5000,
+  shippingFee: 99,
+  /** Cash on delivery only for orders up to this total (delivery included).
+   *  Kept low for computers: a refused ₹40,000 parcel costs the shop two courier trips. */
+  codMaxOrder: 10000,
   /** Parcel size when a product has no weight of its own (courier bookings) */
-  defaultPackage: { weightGrams: 500, lengthCm: 30, breadthCm: 25, heightCm: 5 },
+  defaultPackage: { weightGrams: 2500, lengthCm: 45, breadthCm: 35, heightCm: 12 },
   /** Weight of one piece when the product has none */
-  defaultItemGrams: 300,
-  /** Days after delivery during which items can be returned or exchanged */
+  defaultItemGrams: 1000,
+  /** Days after delivery during which a faulty or wrong item can be returned or replaced */
   returnWindowDays: 7,
 } as const

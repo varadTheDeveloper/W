@@ -1,138 +1,227 @@
 "use client"
 
+import { BRAND, whatsappLink } from "@config/brand"
 import { addToCart } from "@lib/data/cart"
 import { format } from "@lib/i18n"
-import { colourHex, colourName } from "@lib/i18n/colours"
 import { useI18n } from "@lib/i18n/provider"
 import {
-  COLOUR_OPTION,
-  compareSizes,
-  imagesForColour,
+  isProductInStock,
+  isRepresentativePhoto,
   isVariantInStock,
-  productColours,
+  productBadge,
+  productBrand,
+  productCondition,
+  productHighlights,
+  productImages,
   productPrice,
-  productSizes,
-  SIZE_OPTION,
+  variantChoice,
   variantOption,
   variantPrice,
+  warrantyMonths,
 } from "@lib/util/catalog"
+import { formatINR } from "@lib/util/money"
+import { warrantyText } from "@lib/util/warranty"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { BagIcon, CheckIcon } from "@modules/common/icons/ui"
-import { useMemo, useRef, useState, useTransition } from "react"
+import {
+  BoltIcon,
+  CardIcon,
+  CartIcon,
+  CashIcon,
+  CheckIcon,
+  ReceiptIcon,
+  ShieldIcon,
+  StoreIcon,
+  TruckIcon,
+  WhatsAppIcon,
+} from "@modules/common/icons/ui"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState, useTransition } from "react"
 import Price from "../price"
 import WishlistButton from "../wishlist-button"
 import Gallery from "./gallery"
 import PincodeCheck from "./pincode"
-import SizeChartButton from "./size-chart"
 
-const LOW_STOCK = 5
+const LOW_STOCK = 3
 
 export default function ProductView({
   product,
   details,
 }: {
   product: HttpTypes.StoreProduct
-  /** Server-rendered details block, shown under the buttons */
+  /** Server-rendered details block (key features, specifications…), shown under the buttons */
   details: React.ReactNode
 }) {
   const { locale, t } = useI18n()
-  const colours = productColours(product)
-  const sizes = productSizes(product)
+  const router = useRouter()
+  const option = variantChoice(product)
+  const variants = product.variants ?? []
 
-  const variantFor = (colour?: string, size?: string) =>
-    product.variants?.find(
-      (v) =>
-        (!colour || variantOption(product, v, COLOUR_OPTION) === colour) &&
-        (!size || variantOption(product, v, SIZE_OPTION) === size)
-    )
-
-  // Start on the first colour that has any stock
+  // Start on the cheapest variant that is in stock
   const firstInStock =
-    colours.find((c) => product.variants?.some((v) => variantOption(product, v, COLOUR_OPTION) === c && isVariantInStock(v))) ??
-    colours[0]
+    [...variants].filter(isVariantInStock).sort((a, b) => (variantPrice(a)?.price ?? 0) - (variantPrice(b)?.price ?? 0))[0] ?? variants[0]
 
-  const [colour, setColour] = useState<string | undefined>(firstInStock)
-  const [size, setSize] = useState<string | undefined>(sizes.length === 1 ? sizes[0] : undefined)
-  const [sizeError, setSizeError] = useState(false)
+  const [variantId, setVariantId] = useState<string | undefined>(firstInStock?.id)
   const [added, setAdded] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [adding, startAdding] = useTransition()
-  const sizesRef = useRef<HTMLFieldSetElement>(null)
+  const [buying, startBuying] = useTransition()
+  const [url, setUrl] = useState("")
+  const optionsRef = useRef<HTMLFieldSetElement>(null)
 
-  const images = useMemo(() => imagesForColour(product, colour), [product, colour])
-  const variant = size ? variantFor(colour, size) : undefined
+  useEffect(() => setUrl(window.location.href), [])
+
+  const variant = variants.find((v) => v.id === variantId)
   const price = (variant && variantPrice(variant)) || productPrice(product)
-  const stock = variant?.manage_inventory ? variant.inventory_quantity ?? 0 : undefined
+  const stock = variant?.manage_inventory && !variant.allow_backorder ? variant.inventory_quantity ?? 0 : undefined
   const canBuy = !!variant && isVariantInStock(variant)
+  const soldOut = variant ? !canBuy : !isProductInStock(product)
 
-  const onAdd = () => {
+  const images = productImages(product)
+  const brand = productBrand(product)
+  const condition = productCondition(product)
+  const badge = productBadge(product)
+  const highlights = productHighlights(product)
+  const warranty = warrantyMonths(product)
+  const optionName = variant && option ? variantOption(product, variant) : undefined
+
+  const add = (then?: () => void) => {
     setError(null)
-    if (!size || !variant) {
-      setSizeError(true)
-      sizesRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+    if (!variant) {
+      optionsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      setError(t.product.pleaseChoose)
       return
     }
-    startAdding(async () => {
+    const run = then ? startBuying : startAdding
+    run(async () => {
       try {
         await addToCart({ variantId: variant.id, quantity: 1, locale })
-        setAdded(true)
+        if (then) then()
+        else setAdded(true)
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e))
       }
     })
   }
+  const buyNow = () => add(() => router.push(`/${locale}/checkout`))
 
-  const addLabel = adding ? t.product.adding : added ? t.product.added : t.product.addToBag
-  const soldOut = !!variant && !canBuy
+  const whatsappText = format(t.whatsapp.product, {
+    title: product.title ?? "",
+    option: optionName ? ` (${optionName})` : "",
+    url,
+  })
+
+  const gallBadges = (
+    <>
+      {price && price.discountPercent >= 5 && <span className="badge bg-brand-600 text-white">-{price.discountPercent}%</span>}
+      {condition !== "new" && <span className="badge bg-accent-400 text-navy-950">{t.conditions[condition]}</span>}
+      {badge && <span className="badge bg-navy-900 text-white">{t.badges[badge]}</span>}
+    </>
+  )
+
+  const benefits = [
+    { icon: ShieldIcon, text: warrantyText(warranty, t) },
+    { icon: ReceiptIcon, text: t.product.gstInvoice },
+    BRAND.freeDeliveryFrom && price && price.price >= BRAND.freeDeliveryFrom
+      ? { icon: TruckIcon, text: t.product.freeDelivery }
+      : { icon: CashIcon, text: format(t.product.codUpTo, { amount: formatINR(BRAND.codMaxOrder) }) },
+    { icon: StoreIcon, text: t.product.pickup },
+  ]
 
   return (
-    <div className="small:grid small:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] small:gap-12">
-      <div>
-        <Gallery images={images} alt={product.title ?? ""} />
+    <div className="small:grid small:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] small:gap-10 large:gap-14">
+      <div className="small:sticky small:top-[100px] small:self-start">
+        <Gallery images={images} alt={product.title ?? ""} badges={gallBadges} />
+        {isRepresentativePhoto(product) && <p className="mt-3 text-center text-xs text-muted">{t.product.representative}</p>}
       </div>
 
-      <div className="mt-5 flex flex-col gap-6 small:sticky small:top-36 small:mt-0 small:self-start">
+      <div className="mt-4 flex flex-col gap-5 small:mt-0">
         <div>
-          <h1 className="font-heading text-2xl leading-snug small:text-[1.75rem]" data-testid="pdp-title">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {brand && (
+              <LocalizedClientLink href={`/store?brand=${encodeURIComponent(brand)}`} className="rounded-md bg-navy-50 px-2 py-0.5 text-[12px] font-bold uppercase tracking-[0.08em] text-navy-700 hover:bg-navy-100">
+                {brand}
+              </LocalizedClientLink>
+            )}
+            <span className={`rounded-md px-2 py-0.5 text-[12px] font-semibold ${condition === "new" ? "bg-saving/10 text-saving" : "bg-accent-100 text-accent-700"}`} title={t.conditionNotes[condition]}>
+              {t.conditions[condition]}
+            </span>
+          </div>
+          <h1 className="font-heading text-[1.35rem] font-bold leading-snug text-ink small:text-[1.75rem]" data-testid="pdp-title">
             {product.title}
           </h1>
-          {price && (
-            <div className="mt-2">
-              <Price info={price} t={t} size="lg" />
-              <p className="mt-1 text-xs text-muted">{t.product.inclTaxes}</p>
-            </div>
+          {condition !== "new" && <p className="mt-1 text-sm text-muted">{t.conditionNotes[condition]}</p>}
+          {highlights.length > 0 && (
+            <ul className="mt-3 flex flex-wrap gap-1.5">
+              {highlights.map((h) => (
+                <li key={h} className="rounded-lg border border-line bg-white px-2.5 py-1 text-[12.5px] font-medium text-ink">
+                  {h}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 
-        {colours.length > 0 && (
-          <fieldset>
-            <legend className="mb-3 text-sm">
-              {format(t.product.selectColour, { colour: colour ? colourName(colour, locale) : "" })}
-            </legend>
-            <div className="flex flex-wrap gap-2.5">
-              {colours.map((c) => {
-                const thumb = imagesForColour(product, c)[0]
-                const on = c === colour
+        <div className="rounded-2xl border border-line bg-white p-4 small:p-5">
+          {price && <Price info={price} t={t} size="lg" />}
+          <p className="mt-2 text-xs text-muted">
+            {t.product.inclTaxes} · {t.product.gstInvoice}
+          </p>
+          <p className="mt-3 flex items-center gap-2 text-[13px] text-navy-800">
+            <CardIcon size={17} className="text-navy-600" />
+            {t.product.emi}
+          </p>
+          <p className="mt-2 text-[13px]" aria-live="polite">
+            {soldOut ? (
+              <span className="font-semibold text-danger">{t.product.outOfStock}</span>
+            ) : stock !== undefined && stock <= LOW_STOCK ? (
+              <span className="flex items-center gap-1.5 font-semibold text-[#c2410c]" data-testid="low-stock">
+                <BoltIcon size={15} />
+                {format(t.product.onlyLeft, { count: stock })}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 font-semibold text-saving">
+                <CheckIcon size={15} strokeWidth={2.6} />
+                {t.product.inStock}
+              </span>
+            )}
+          </p>
+        </div>
+
+        {option && (
+          <fieldset ref={optionsRef}>
+            <legend className="mb-2.5 text-sm font-semibold">{format(t.product.choose, { option: option.title })}</legend>
+            <div className="grid gap-2 xsmall:grid-cols-2" role="radiogroup" aria-label={option.title}>
+              {variants.map((v) => {
+                const on = v.id === variantId
+                const available = isVariantInStock(v)
+                const vp = variantPrice(v)
                 return (
                   <button
-                    key={c}
+                    key={v.id}
                     type="button"
+                    role="radio"
+                    aria-checked={on}
+                    disabled={!available}
                     onClick={() => {
-                      setColour(c)
+                      setVariantId(v.id)
                       setAdded(false)
+                      setError(null)
                     }}
-                    aria-pressed={on}
-                    aria-label={colourName(c, locale)}
-                    title={colourName(c, locale)}
-                    className={`relative h-[72px] w-[58px] overflow-hidden border ${on ? "border-ink ring-1 ring-ink" : "border-line hover:border-muted"}`}
-                    style={{ backgroundColor: colourHex(c) }}
-                    data-testid={`colour-${c}`}
+                    className={`relative flex flex-col items-start gap-0.5 rounded-xl border-2 px-3.5 py-2.5 text-left transition ${
+                      on ? "border-navy-900 bg-navy-50/60" : available ? "border-line bg-white hover:border-navy-300" : "cursor-not-allowed border-line bg-surface opacity-60"
+                    }`}
+                    data-testid={`variant-${v.id}`}
                   >
-                    {thumb && (
-                      // Small decorative preview; next/image is not needed at this size
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumb} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <span className="text-[13.5px] font-semibold leading-snug">{variantOption(product, v)}</span>
+                    <span className="text-[13px] tabular text-muted">
+                      {vp ? formatINR(vp.price) : ""}
+                      {!available && ` · ${t.product.soldOut}`}
+                    </span>
+                    {on && (
+                      <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-navy-900 text-white">
+                        <CheckIcon size={12} strokeWidth={3} />
+                      </span>
                     )}
                   </button>
                 )
@@ -141,81 +230,65 @@ export default function ProductView({
           </fieldset>
         )}
 
-        {sizes.length > 0 && (
-          <fieldset ref={sizesRef}>
-            <div className="mb-2 flex items-center justify-between">
-              <legend className="text-sm">{t.product.selectSize}</legend>
-              <SizeChartButton chartKey={product.metadata?.size_chart as string | undefined} />
-            </div>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.product.selectSize}>
-              {[...sizes].sort(compareSizes).map((s) => {
-                const v = variantFor(colour, s)
-                const available = !!v && isVariantInStock(v)
-                const on = s === size
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    disabled={!available}
-                    onClick={() => {
-                      setSize(s)
-                      setSizeError(false)
-                      setAdded(false)
-                    }}
-                    className={`relative h-12 min-w-[3.5rem] border px-3 text-[14px] transition-colors ${
-                      on
-                        ? "border-ink bg-ink text-white"
-                        : available
-                        ? "border-line bg-white hover:border-ink"
-                        : "cursor-not-allowed border-line bg-surface text-muted line-through"
-                    }`}
-                    aria-label={available ? s : `${s} – ${t.product.soldOut}`}
-                    data-testid={`size-${s}`}
-                  >
-                    {s}
-                  </button>
-                )
-              })}
-            </div>
-            <div aria-live="polite" className="mt-2 min-h-[1.25rem] text-sm">
-              {sizeError && <p className="text-danger">{t.product.pleaseSelectSize}</p>}
-              {!sizeError && stock !== undefined && stock > 0 && stock <= LOW_STOCK && (
-                <p className="text-saving" data-testid="low-stock">
-                  {format(t.product.onlyLeft, { count: stock })}
-                </p>
-              )}
-            </div>
-          </fieldset>
-        )}
-
         {/* Buttons: inline on computers, fixed above the bottom bar on phones */}
-        <div className="fixed inset-x-0 bottom-14 z-30 border-t border-line bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] small:static small:border-0 small:p-0">
-          <div className="flex gap-3">
+        <div className="fixed inset-x-0 bottom-14 z-30 border-t border-line bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(11,19,36,0.08)] backdrop-blur small:static small:border-0 small:bg-transparent small:p-0 small:shadow-none">
+          <div className="flex gap-2.5">
             {added ? (
-              <LocalizedClientLink href="/cart" prefetch={false} className="btn-accent flex-1" data-testid="go-to-bag">
+              <LocalizedClientLink href="/cart" prefetch={false} className="btn-dark flex-1" data-testid="go-to-bag">
                 <CheckIcon size={20} />
                 {t.product.goToBag}
               </LocalizedClientLink>
             ) : (
-              <button
-                type="button"
-                onClick={onAdd}
-                disabled={adding || soldOut}
-                className="btn-primary flex-1"
-                data-testid="add-product-button"
-              >
-                <BagIcon size={20} strokeWidth={1.6} />
-                {soldOut ? t.product.outOfStock : addLabel}
+              <button type="button" onClick={() => add()} disabled={adding || buying || soldOut} className="btn-primary flex-1" data-testid="add-product-button">
+                <CartIcon size={20} strokeWidth={2} />
+                {soldOut ? t.product.outOfStock : adding ? t.product.adding : t.product.addToBag}
               </button>
             )}
-            <WishlistButton handle={product.handle!} variant="button" />
+            {!soldOut && (
+              <button type="button" onClick={buyNow} disabled={adding || buying} className="btn-accent flex-1" data-testid="buy-now">
+                <BoltIcon size={19} />
+                {buying ? t.common.loading : t.product.buyNow}
+              </button>
+            )}
+            <span className="hidden small:block">
+              <WishlistButton handle={product.handle!} variant="button" />
+            </span>
           </div>
-          {error && <p className="mt-2 text-sm text-danger" role="alert">{error}</p>}
+          {error && (
+            <p className="mt-2 text-sm text-danger" role="alert">
+              {error}
+            </p>
+          )}
         </div>
 
+        <ul className="grid grid-cols-2 gap-2">
+          {benefits.map(({ icon: Icon, text }) => (
+            <li key={text} className="flex items-center gap-2.5 rounded-xl bg-surface px-3 py-2.5 text-[12.5px] font-medium leading-snug">
+              <Icon size={20} className="shrink-0 text-navy-700" />
+              {text}
+            </li>
+          ))}
+        </ul>
+
         <PincodeCheck />
+
+        <a
+          href={whatsappLink(whatsappText)}
+          target="_blank"
+          rel="noopener"
+          className="group flex items-center gap-3 rounded-2xl border border-[#25d366]/40 bg-[#25d366]/[0.07] p-4 transition hover:bg-[#25d366]/[0.12]"
+          data-testid="product-whatsapp"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#25d366] text-white">
+            <WhatsAppIcon size={24} />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-semibold">{t.product.askTitle}</span>
+            <span className="block text-[12.5px] text-muted">{t.product.askText}</span>
+          </span>
+          <span className="text-sm font-semibold text-[#128c4a] group-hover:underline">{t.common.chatOnWhatsApp}</span>
+        </a>
+
         {details}
       </div>
     </div>

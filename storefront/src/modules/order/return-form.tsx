@@ -8,6 +8,7 @@ import { LineDetails } from "@modules/bag/bag-view"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useRef, useState, useTransition } from "react"
+import { shopImage } from "@lib/util/catalog"
 
 const REASONS: ReturnReason[] = ["too_small", "too_large", "damaged", "wrong_item", "not_as_shown", "changed_mind", "other"]
 const PHOTO_REASONS: ReturnReason[] = ["damaged", "wrong_item"]
@@ -107,7 +108,7 @@ export default function ReturnForm({ orderId, info, details }: { orderId: string
         {info.items.map((item) => {
           const c = choice(item.line_item_id)
           const d = details[item.line_item_id] ?? {}
-          const image = d.image ?? item.thumbnail
+          const image = d.image ?? (item.thumbnail ? shopImage(item.thumbnail) : undefined)
           const why = !item.returnable ? (item.reason === "already_requested" ? r.alreadyRequested : item.reason === "exchange_item" ? r.exchangeItem : r.notReturnable) : null
           const sizes = item.exchange_options
           return (

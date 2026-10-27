@@ -16,21 +16,24 @@ export function useLocaleHref() {
   }
 }
 
-export default function LanguageSwitcher({ className = "" }: { className?: string }) {
+export default function LanguageSwitcher({ className = "", tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
   const { locale, t } = useI18n()
   const hrefFor = useLocaleHref()
+  const dark = tone === "dark"
 
   return (
     <details className={`group relative ${className}`}>
       <summary
-        className="flex h-10 cursor-pointer list-none items-center gap-1.5 px-1.5 text-sm text-ink hover:opacity-70 [&::-webkit-details-marker]:hidden"
+        className={`flex cursor-pointer list-none items-center gap-1.5 rounded-md px-1.5 [&::-webkit-details-marker]:hidden ${
+          dark ? "h-8 text-[12px] font-medium text-white hover:text-accent-300" : "h-10 text-sm text-ink hover:opacity-70"
+        }`}
         data-testid="language-switcher"
       >
-        <GlobeIcon size={20} />
+        <GlobeIcon size={dark ? 15 : 20} className={dark ? "text-accent-400" : ""} />
         <span className="sr-only">{t.common.language}: </span>
         <span>{LOCALE_NAMES[locale]}</span>
       </summary>
-      <ul className="absolute right-0 z-50 mt-1 w-40 overflow-hidden border border-line bg-white py-1 shadow-lg">
+      <ul className="absolute right-0 z-[70] mt-1 w-40 overflow-hidden rounded-xl border border-line bg-white py-1 text-ink shadow-lift">
         {LOCALES.map((code) => (
           <li key={code}>
             <Link

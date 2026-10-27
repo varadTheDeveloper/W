@@ -1,10 +1,13 @@
 import { HttpTypes } from "@medusajs/types"
-import { COLOURS } from "@lib/i18n/colours"
-import { productColours, productFabric } from "./catalog"
+import { productBrand, productHighlights, productSpecs } from "./catalog"
+
+/** One search suggestion while typing (GET /api/suggest) */
+export type Suggestion = { handle: string; title: string; image?: string; price?: number; mrp?: number }
 
 // Simple in-memory product search, good for a catalogue of a few hundred items.
 // Every word typed must match a word of the product (in the page language or
-// English), allowing plurals ("kurtas") and one typo in longer words ("krta" no, "kurtha" yes).
+// English): title, brand, category, key points and specs, so "16gb", "rtx" or
+// "i5" work. Allows plurals ("laptops") and one typo in longer words ("lapto" yes).
 
 export function normalize(text: string): string {
   return text
@@ -43,14 +46,15 @@ function wordMatches(query: string, word: string): boolean {
 }
 
 function haystack(product: HttpTypes.StoreProduct): string[] {
-  const colourWords = productColours(product).flatMap((c) => [c, ...Object.values(COLOURS[c]?.name ?? {})])
+  const variantSpecs = (product.variants ?? []).flatMap((v) => productSpecs(product, v).map(([, value]) => value))
   const parts = [
     product.title,
     product.description,
-    product.material,
-    productFabric(product),
+    productBrand(product),
+    ...productHighlights(product),
+    ...variantSpecs,
     ...(product.categories ?? []).map((c) => c.name),
-    ...colourWords,
+    ...(product.variants ?? []).map((v) => v.title),
   ]
   return normalize(parts.filter(Boolean).join(" ")).split(" ")
 }

@@ -49,33 +49,58 @@
   }
 }
 
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Prices and specs line up in columns */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 @layer components {
   .content-container {
-    @apply max-w-[1440px] w-full mx-auto px-4 small:px-8;
+    @apply max-w-[1360px] w-full mx-auto px-4 small:px-6;
   }
 
+  /* Main action: signboard yellow with navy text (Add to cart, Shop now) */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-ink px-6 h-12 text-[15px] font-medium tracking-wide text-white transition-colors hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:bg-grey-40;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-400 px-6 h-12 text-[15px] font-semibold text-navy-950 shadow-sm transition-all hover:bg-accent-300 hover:shadow-md active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 disabled:cursor-not-allowed disabled:bg-grey-20 disabled:text-grey-50 disabled:shadow-none;
   }
 
+  /* Strong action: signboard red (Buy now, offers) */
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 bg-brand-600 px-6 h-12 text-[15px] font-medium tracking-wide text-white transition-colors hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:bg-grey-40;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 h-12 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:bg-grey-30 disabled:shadow-none;
+  }
+
+  /* Quiet action on light backgrounds */
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 px-6 h-12 text-[15px] font-semibold text-white transition-all hover:bg-navy-800 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 disabled:cursor-not-allowed disabled:bg-grey-40;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 border border-ink bg-transparent px-6 h-12 text-[15px] font-medium tracking-wide text-ink transition-colors hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:border-line disabled:text-muted disabled:hover:bg-transparent;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-6 h-12 text-[15px] font-semibold text-ink transition-colors hover:border-navy-900 hover:bg-navy-50 disabled:cursor-not-allowed disabled:text-muted disabled:hover:bg-white;
+  }
+
+  .btn-whatsapp {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-[#25d366] px-6 h-12 text-[15px] font-semibold text-[#06301a] transition-all hover:bg-[#1fbf5b] active:scale-[0.98];
   }
 
   .chip {
-    @apply inline-flex min-w-[3rem] items-center justify-center border border-line bg-white px-4 h-10 text-sm text-ink transition-colors hover:border-ink;
+    @apply inline-flex min-w-[3rem] items-center justify-center rounded-lg border border-line bg-white px-4 h-10 text-sm text-ink transition-colors hover:border-navy-900;
   }
 
   .chip-active {
-    @apply border-ink bg-ink text-white;
+    @apply border-navy-900 bg-navy-900 text-white hover:border-navy-900;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line/80 bg-white shadow-card;
   }
 
   .eyebrow {
-    @apply text-xs font-medium uppercase tracking-[0.18em] text-muted;
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-muted;
   }
 
   /* Letter spacing splits joined Devanagari letters: keep it for English only */
@@ -89,11 +114,32 @@
   }
 
   .heading-xl {
-    @apply font-heading text-[2rem] leading-[1.15] small:text-5xl;
+    @apply font-heading text-[1.75rem] font-bold leading-[1.15] tracking-tight small:text-[2.75rem];
   }
 
   .heading-lg {
-    @apply font-heading text-2xl leading-tight small:text-[2rem];
+    @apply font-heading text-xl font-bold leading-tight tracking-tight small:text-[1.75rem];
+  }
+
+  .heading-md {
+    @apply font-heading text-lg font-semibold leading-snug small:text-xl;
+  }
+
+  /* Any letter spacing (tracking-*) breaks joined Devanagari letters.
+     :lang() follows the nearest lang attribute, so the English logo (lang="en") keeps its spacing. */
+  [class*="tracking-"]:lang(mr),
+  [class*="tracking-"]:lang(hi) {
+    letter-spacing: normal;
+  }
+
+  :lang(mr) :is(.heading-xl, .heading-lg, .heading-md),
+  :lang(hi) :is(.heading-xl, .heading-lg, .heading-md) {
+    letter-spacing: normal;
+  }
+
+  /* Badges on cards */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold leading-5;
   }
 
   .contrast-btn {
