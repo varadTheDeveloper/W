@@ -19,7 +19,7 @@ process.env.MESSAGECENTRAL_SENDER_ID = "VASTRA"
 process.env.MESSAGECENTRAL_ENTITY_ID = "1101000000000000001"
 process.env.SMS_TEMPLATE_IDS = JSON.stringify({ "placed.mr": "T-PLACED-MR", "shipped.en": "T-SHIPPED-EN" })
 process.env.RESEND_API_KEY = "re_test"
-process.env.EMAIL_FROM = "Vastra <orders@example.com>"
+process.env.EMAIL_FROM = "Computer Warehouse Jalna <orders@example.com>"
 process.env.ORDER_ALERT_EMAIL = "shop@example.com"
 process.env.STOREFRONT_URL = "https://shop.example.com"
 process.env.SHIPROCKET_EMAIL = EMAIL
@@ -55,7 +55,7 @@ medusaIntegrationTestRunner({
 
       // Placed (Marathi by default): customer email, shop alert, SMS with the registered template
       const placed = await waitFor(async () => emailsTo("asha@example.com")[0])
-      expect(placed.subject).toBe(`ऑर्डर #${number} नोंदवली – Vastra`)
+      expect(placed.subject).toBe(`ऑर्डर #${number} नोंदवली – Computer Warehouse Jalna`)
       expect(placed.text).toContain(`https://shop.example.com/mr/account/orders/details/${order.id}`)
       expect(placed.html).toContain("रोख किंवा UPI")
       const alert = await waitFor(async () => emailsTo("shop@example.com")[0])
@@ -63,7 +63,7 @@ medusaIntegrationTestRunner({
       const sms = await waitFor(async () => messaging.state.sms.find((s: any) => s.templateId === "T-PLACED-MR"))
       expect(sms).toMatchObject({ mobileNumber: phone, senderId: "VASTRA", entityId: "1101000000000000001", messageType: "TRANSACTION" })
       expect(sms.message).toBe(
-        `तुमची Vastra ऑर्डर #${number} (Rs.${order.total}) नोंदवली आहे. तपशील: https://shop.example.com/mr/account/orders/details/${order.id}`
+        `तुमची Computer Warehouse Jalna ऑर्डर #${number} (Rs.${Number(order.total).toLocaleString("en-IN")}) नोंदवली आहे. तपशील: https://shop.example.com/mr/account/orders/details/${order.id}`
       )
 
       // Shipped: email with the tracking link; no SMS because "shipped.mr" is not registered
@@ -92,7 +92,7 @@ medusaIntegrationTestRunner({
       const { order, customer } = await shop.placeCodOrder(shop.cheap, 1, { email: "ravi@example.com", locale: "hi-IN" })
       await api.post(`/store/orders/${order.id}/cancel`, { reason: "changed_mind" }, { headers: customer })
       const email = await waitFor(async () => emailsTo("ravi@example.com").find((e: any) => e.subject.includes("रद्द")))
-      expect(email.subject).toBe(`ऑर्डर #${order.display_id} रद्द हो गया – Vastra`)
+      expect(email.subject).toBe(`ऑर्डर #${order.display_id} रद्द हो गया – Computer Warehouse Jalna`)
       expect(email.text).toContain("आपको कुछ भी भुगतान नहीं करना है")
       expect(email.text).toContain("/hi/account/orders/details/")
     })

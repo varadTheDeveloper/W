@@ -115,7 +115,7 @@ medusaIntegrationTestRunner({
       const awb = approved.data.return_request.pickup_awb
       expect(awb).toMatch(/^RAWB/)
       const booked = [...shiprocket.state.orders.values()].find((o: any) => o.awb === awb)
-      expect(booked.input).toMatchObject({ pickup_pincode: "431203", shipping_pincode: "431203", payment_method: "PREPAID", sub_total: Number(item.total) })
+      expect(booked.input).toMatchObject({ pickup_pincode: "431203", shipping_pincode: "431213", payment_method: "PREPAID", sub_total: Number(item.total) })
 
       await api.post("/hooks/delivery-updates", { awb, current_status: "PICKED UP" }, { headers: { "x-api-key": "hook-token" } })
       expect((await returnsOf(order.id, customer)).requests[0].status).toBe("picked_up")
