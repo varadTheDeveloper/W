@@ -1,0 +1,209 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  input:focus ~ label,
+  input:not(:placeholder-shown) ~ label {
+    @apply -translate-y-2 text-xsmall-regular;
+  }
+
+  input:focus ~ label {
+    @apply left-0;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    border: 1px solid #212121;
+    -webkit-text-fill-color: #212121;
+    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Prices and specs line up in columns */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .content-container {
+    @apply max-w-[1360px] w-full mx-auto px-4 small:px-6;
+  }
+
+  /* Main action: signboard yellow with navy text (Add to cart, Shop now) */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-400 px-6 h-12 text-[15px] font-semibold text-navy-950 shadow-sm transition-all hover:bg-accent-300 hover:shadow-md active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 disabled:cursor-not-allowed disabled:bg-grey-20 disabled:text-grey-50 disabled:shadow-none;
+  }
+
+  /* Strong action: signboard red (Buy now, offers) */
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 h-12 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:bg-grey-30 disabled:shadow-none;
+  }
+
+  /* Quiet action on light backgrounds */
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 px-6 h-12 text-[15px] font-semibold text-white transition-all hover:bg-navy-800 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 disabled:cursor-not-allowed disabled:bg-grey-40;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-6 h-12 text-[15px] font-semibold text-ink transition-colors hover:border-navy-900 hover:bg-navy-50 disabled:cursor-not-allowed disabled:text-muted disabled:hover:bg-white;
+  }
+
+  .btn-whatsapp {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-[#25d366] px-6 h-12 text-[15px] font-semibold text-[#06301a] transition-all hover:bg-[#1fbf5b] active:scale-[0.98];
+  }
+
+  .chip {
+    @apply inline-flex min-w-[3rem] items-center justify-center rounded-lg border border-line bg-white px-4 h-10 text-sm text-ink transition-colors hover:border-navy-900;
+  }
+
+  .chip-active {
+    @apply border-navy-900 bg-navy-900 text-white hover:border-navy-900;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line/80 bg-white shadow-card;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-muted;
+  }
+
+  /* Letter spacing splits joined Devanagari letters: keep it for English only */
+  :lang(mr) :is(.eyebrow, .tracking-wide, .btn-primary, .btn-accent, .btn-outline),
+  :lang(hi) :is(.eyebrow, .tracking-wide, .btn-primary, .btn-accent, .btn-outline) {
+    letter-spacing: normal;
+  }
+  :lang(mr) .eyebrow,
+  :lang(hi) .eyebrow {
+    @apply text-[13px];
+  }
+
+  .heading-xl {
+    @apply font-heading text-[1.75rem] font-bold leading-[1.15] tracking-tight small:text-[2.75rem];
+  }
+
+  .heading-lg {
+    @apply font-heading text-xl font-bold leading-tight tracking-tight small:text-[1.75rem];
+  }
+
+  .heading-md {
+    @apply font-heading text-lg font-semibold leading-snug small:text-xl;
+  }
+
+  /* Any letter spacing (tracking-*) breaks joined Devanagari letters.
+     :lang() follows the nearest lang attribute, so the English logo (lang="en") keeps its spacing. */
+  [class*="tracking-"]:lang(mr),
+  [class*="tracking-"]:lang(hi) {
+    letter-spacing: normal;
+  }
+
+  /* Marathi and Hindi headings in Mukta bold: next/font lists Poppins' Devanagari files too,
+     and using them would add ~76 KB per page (e2e/speed.spec.ts budget). The English logo (lang="en") keeps Poppins. */
+  .font-heading:lang(mr),
+  .font-heading:lang(hi),
+  :lang(mr) :is(.heading-xl, .heading-lg, .heading-md),
+  :lang(hi) :is(.heading-xl, .heading-lg, .heading-md) {
+    font-family: var(--font-latin), var(--font-sans), system-ui, sans-serif;
+  }
+
+  :lang(mr) :is(.heading-xl, .heading-lg, .heading-md),
+  :lang(hi) :is(.heading-xl, .heading-lg, .heading-md) {
+    letter-spacing: normal;
+  }
+
+  /* Badges on cards */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold leading-5;
+  }
+
+  .contrast-btn {
+    @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+  }
+
+  .text-xsmall-regular {
+    @apply text-[10px] leading-4 font-normal;
+  }
+
+  .text-small-regular {
+    @apply text-xs leading-5 font-normal;
+  }
+
+  .text-small-semi {
+    @apply text-xs leading-5 font-semibold;
+  }
+
+  .text-base-regular {
+    @apply text-sm leading-6 font-normal;
+  }
+
+  .text-base-semi {
+    @apply text-sm leading-6 font-semibold;
+  }
+
+  .text-large-regular {
+    @apply text-base leading-6 font-normal;
+  }
+
+  .text-large-semi {
+    @apply text-base leading-6 font-semibold;
+  }
+
+  .text-xl-regular {
+    @apply text-2xl leading-[36px] font-normal;
+  }
+
+  .text-xl-semi {
+    @apply text-2xl leading-[36px] font-semibold;
+  }
+
+  .text-2xl-regular {
+    @apply text-[30px] leading-[48px] font-normal;
+  }
+
+  .text-2xl-semi {
+    @apply text-[30px] leading-[48px] font-semibold;
+  }
+
+  .text-3xl-regular {
+    @apply text-[32px] leading-[44px] font-normal;
+  }
+
+  .text-3xl-semi {
+    @apply text-[32px] leading-[44px] font-semibold;
+  }
+}

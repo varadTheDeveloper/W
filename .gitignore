@@ -1,0 +1,12 @@
+# Secrets
+.env
+.env.*
+!.env.template
+!.env.test
+
+node_modules/
+.DS_Store
+*.log
+
+# Local Redis snapshots
+dump.rdb
