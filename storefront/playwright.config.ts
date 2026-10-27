@@ -10,6 +10,8 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL || "http://localhost:8000",
     trace: "retain-on-failure",
+    // Machines with a different pre-installed Chromium can point at it: PW_CHROMIUM_PATH=/path/to/chrome
+    ...(process.env.PW_CHROMIUM_PATH ? { launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH } } : {}),
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
