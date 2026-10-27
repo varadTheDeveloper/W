@@ -57,7 +57,8 @@ module.exports = {
         line: "#e3e7ee",
         surface: "#f2f4f8",
         cream: "#f5f7fb",
-        saving: "#0f8a4c",
+        // Dark enough for small text on white and on its own 10% tint (WCAG AA)
+        saving: "#0b7a42",
         danger: "#d92d20",
         grey: {
           0: "#FFFFFF",

@@ -466,39 +466,39 @@ export function VisitStore({ t, locale }: { t: Dictionary; locale: Locale }) {
           </span>
           <h2 className="heading-lg mt-4">{t.home.storeTitle}</h2>
           <p className="mt-2 text-muted">{t.home.storeText}</p>
-          <dl className="mt-6 space-y-4 text-sm">
-            <div className="flex gap-3">
+          <ul className="mt-6 space-y-4 text-sm">
+            <li className="flex gap-3">
               <PinIcon size={20} className="mt-0.5 shrink-0 text-brand-600" />
-              <div>
-                <dt className="font-semibold">{t.home.addressLabel}</dt>
-                <dd className="text-muted">
+              <span>
+                <span className="block font-semibold">{t.home.addressLabel}</span>
+                <span className="text-muted">
                   {BRAND.address.line1}, {BRAND.address.line2}, {BRAND.address.city}
-                </dd>
-              </div>
-            </div>
-            <div className="flex gap-3">
+                </span>
+              </span>
+            </li>
+            <li className="flex gap-3">
               <ClockIcon size={20} className="mt-0.5 shrink-0 text-brand-600" />
-              <div>
-                <dt className="font-semibold">{t.home.hoursLabel}</dt>
-                <dd className="text-muted">
+              <span>
+                <span className="block font-semibold">{t.home.hoursLabel}</span>
+                <span className="text-muted">
                   {hours.from} – {hours.to}
-                </dd>
-              </div>
-            </div>
-            <div className="flex gap-3">
+                </span>
+              </span>
+            </li>
+            <li className="flex gap-3">
               <PhoneIcon size={20} className="mt-0.5 shrink-0 text-brand-600" />
-              <div>
-                <dt className="font-semibold">{t.home.phoneLabel}</dt>
-                <dd className="flex flex-wrap gap-x-4 text-muted">
+              <span>
+                <span className="block font-semibold">{t.home.phoneLabel}</span>
+                <span className="flex flex-wrap gap-x-4 text-muted">
                   {BRAND.phones.map((p) => (
                     <a key={p.number} href={`tel:+91${p.number}`} className="tabular hover:text-ink">
                       {p.number.slice(0, 5)} {p.number.slice(5)} ({p.name.split(" ")[0]})
                     </a>
                   ))}
-                </dd>
-              </div>
-            </div>
-          </dl>
+                </span>
+              </span>
+            </li>
+          </ul>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href={directionsUrl} target="_blank" rel="noopener" className="btn-dark h-11 px-5">
               <PinIcon size={18} />

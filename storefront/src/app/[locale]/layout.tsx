@@ -8,7 +8,8 @@ import { Inter, Mukta, Poppins } from "next/font/google"
 import "styles/globals.css"
 
 // Inter for English letters and numbers, Mukta for Marathi and Hindi letters (the
-// browser picks each font by character), Poppins for headings in all three.
+// browser picks each font by character). Poppins for English headings; Marathi and
+// Hindi headings use Mukta bold (Poppins' Devanagari files would add ~160 KB).
 // Not preloaded: phones then fetch only the files a page really uses.
 const inter = Inter({
   subsets: ["latin"],
@@ -20,14 +21,14 @@ const inter = Inter({
 
 const mukta = Mukta({
   subsets: ["devanagari"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600", "700"],
   display: "swap",
   preload: false,
   variable: "--font-sans",
 })
 
 const poppins = Poppins({
-  subsets: ["devanagari", "latin"],
+  subsets: ["latin"],
   weight: ["600", "700"],
   display: "swap",
   preload: false,
