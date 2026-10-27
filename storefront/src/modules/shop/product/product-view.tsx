@@ -280,7 +280,7 @@ export default function ProductView({ product }: { product: HttpTypes.StoreProdu
             <span className="block text-sm font-semibold">{t.product.askTitle}</span>
             <span className="block text-[12.5px] text-muted">{t.product.askText}</span>
           </span>
-          <span className="text-sm font-semibold text-[#128c4a] group-hover:underline">{t.common.chatOnWhatsApp}</span>
+          <span className="text-sm font-semibold text-[#0b6b38] group-hover:underline">{t.common.chatOnWhatsApp}</span>
         </a>
 
         <ProductDetails product={product} variant={variant} />

@@ -11,9 +11,11 @@ import "styles/globals.css"
 // browser picks each font by character). Poppins for English headings; Marathi and
 // Hindi headings use Mukta bold (Poppins' Devanagari files would add ~160 KB).
 // Not preloaded: phones then fetch only the files a page really uses.
+// Two weights per font keep phones within the font budget (e2e/speed.spec.ts); the
+// browser uses the nearest one for medium and bold text.
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600"],
   display: "swap",
   preload: false,
   variable: "--font-latin",
@@ -21,7 +23,7 @@ const inter = Inter({
 
 const mukta = Mukta({
   subsets: ["devanagari"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "700"],
   display: "swap",
   preload: false,
   variable: "--font-sans",
