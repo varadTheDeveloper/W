@@ -9,8 +9,8 @@
  */
 export const BRAND = {
   name: "Computer Warehouse Jalna",
-  /** Two lines of the text logo */
-  logo: { top: "COMPUTER", middle: "WAREHOUSE", place: "JALNA" },
+  /** Text logo: name, then "Jalna Multi-brand +" (English on every language, like a brand name) */
+  logo: { name: "Computer Warehouse", place: "Jalna", extra: "Multi-brand" },
   /** Shop tagline from its posts: "Your trust, our responsibility!" */
   tagline: { mr: "तुमचा विश्वास, आमची जबाबदारी!", hi: "आपका विश्वास, हमारी ज़िम्मेदारी!", en: "Your trust, our responsibility!" },
   /** Free delivery from this items total in rupees, or null if not offered.
