@@ -8,6 +8,7 @@ This project is GPL-3.0 (see `LICENSE`). It includes code copied from these proj
 | `storefront/` | [medusajs/nextjs-starter-medusa](https://github.com/medusajs/nextjs-starter-medusa) | `9818886f06e493cb2249733d114d339aa216ef00` | MIT (`storefront/LICENSE`) |
 
 | `backend/src/assets/fonts/` | [Mukta](https://github.com/google/fonts/tree/main/ofl/mukta) font files (from google/fonts, `main` on 2026-10-11), used in GST invoice PDFs | — | SIL Open Font License 1.1 (`backend/src/assets/fonts/OFL.txt`) |
+| `storefront/src/app/icon.svg`, `LogoMark` in `storefront/src/modules/layout/components/header/logo.tsx` | The letters "CW" drawn from [Poppins](https://github.com/google/fonts/tree/main/ofl/poppins) Bold (outlines, slanted 14°), the same font the website loads through next/font | — | SIL Open Font License 1.1 |
 
 Libraries installed through `package.json` keep their own licences.
 
